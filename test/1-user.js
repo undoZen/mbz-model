@@ -47,6 +47,7 @@ describe('user model', function () {
     .then(function (user) {
       assert(crypt.vhash(userObj.password, user.password));
       delete userObj.password;
+      userObj.id = 1;
       done();
     }).done();
   });

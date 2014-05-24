@@ -20,6 +20,7 @@ exports.qAddUser = function (user) {
   u.password = crypt.ghash(u.password);
   return qdb.incr('global:userCount')
   .then(function (id) {
+    u.id = id;
     return qdb.set('username2id:' + u.username, id)
     .then(qdb.set('user:'+id, JSON.stringify(u)))
     .then(function () {
