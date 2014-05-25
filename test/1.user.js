@@ -1,5 +1,6 @@
 var assert = require('assert');
 var Q = require('q');
+var _ = require('lodash');
 
 var spawn = require('child_process').spawn;
 
@@ -75,4 +76,62 @@ describe('user model', function () {
       done();
     }).done();
   });
+
+  it('can get user by email', function (done) {
+    userModel.qGetUserByEmail(userObj.email)
+    .then(function (user) {
+      delete user.password;
+      assert.deepEqual(user, userObj);
+      done();
+    }).done();
+  });
+
+  it('will throw error when email conflict', function (done) {
+    var uo = _.extend({}, userObj, {username:'helloworld'});
+    userModel.qAddUser(uo)
+    .fail(function (err) {
+      assert.equal(err.message, 'email exists');
+      done();
+    }).done();
+  });
+
+  it('will throw error when username conflict', function (done) {
+    userModel.qAddUser(userObj)
+    .fail(function (err) {
+      assert.equal(err.message, 'username exists');
+      done();
+    }).done();
+  });
+
+  it('username should be case-insensitive', function (done) {
+    var uo = _.extend({}, userObj, {username:'undoZen'});
+    userModel.qGetUserByUsername(uo.username)
+    .then(function (user) {
+      delete user.password;
+      assert.deepEqual(user, userObj);
+      return userModel.qAddUser(uo);
+    })
+    .fail(function (err) {
+      assert.equal(err.message, 'username exists');
+      done();
+    }).done();
+  });
+
+  it('email should be case-insensitive', function (done) {
+    var uo = {
+      username: 'helloworld',
+      email: 'undoZen@GMail.com',
+      password: '123123123'
+    }
+    userModel.qGetUserByEmail(uo.email)
+    .then(function (user) {
+      assert.equal(user.id, userObj.id);
+      return userModel.qAddUser(uo);
+    })
+    .fail(function (err) {
+      assert.equal(err.message, 'email exists');
+      done();
+    }).done();
+  });
+
 });
