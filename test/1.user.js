@@ -11,7 +11,7 @@ describe('user model', function () {
   var child;
   before(function (done) {
     fs.unlink(__dirname + '/../tmp/redis/dump.rdb', function () {
-      child = spawn('redis-server', [__dirname + '/../config/test_redis.conf']);
+      child = spawn('redis-server', [__dirname + '/redis.conf']);
       var doneCalled = false;
       child.stdout.on('data', function () {
         if (doneCalled) return;
