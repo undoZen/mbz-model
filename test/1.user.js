@@ -1,4 +1,3 @@
-var fs = require('fs');
 var assert = require('assert');
 var Q = require('q');
 
@@ -10,14 +9,13 @@ var userModel = require('../models/user');
 describe('user model', function () {
   var child;
   before(function (done) {
-    fs.unlink(__dirname + '/../tmp/redis/dump.rdb', function () {
-      child = spawn('redis-server', [__dirname + '/redis.conf']);
-      var doneCalled = false;
-      child.stdout.on('data', function () {
-        if (doneCalled) return;
-        doneCalled = true;
-        done();
-      });
+    //dump.rdb file will be deleted by last test case.
+    child = spawn('redis-server', [__dirname + '/redis.conf']);
+    var doneCalled = false;
+    child.stdout.on('data', function () {
+      if (doneCalled) return;
+      doneCalled = true;
+      done();
     });
   });
 
