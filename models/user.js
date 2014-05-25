@@ -1,16 +1,7 @@
 var Q = require('q');
 
-var redis = require('redis');
-var db = redis.createClient(6789);
-var qdb = {};
-
+var qdb = require('./qdb');
 var crypt = require('../utils').crypt;
-
-for (var k in db) {
-  if ('function' == typeof db[k]) {
-    qdb[k] = Q.ninvoke.bind(Q, db, k);
-  }
-}
 
 exports.qAddUser = function (user) {
   var u = {};

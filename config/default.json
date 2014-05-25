@@ -1,0 +1,9 @@
+{
+  "mysqlConnection": {
+    "host": "127.0.0.1",
+    "user": "mbzdev",
+    "password": "mbzDEV",
+    "database": "mbzdev",
+    "charset": "utf8"
+  }
+}

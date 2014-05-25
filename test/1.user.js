@@ -5,26 +5,13 @@ var _ = require('lodash');
 var spawn = require('child_process').spawn;
 
 var crypt = require('../utils').crypt;
+var qdb = require('../models/qdb');
 var userModel = require('../models/user');
 
 describe('user model', function () {
-  var child;
   before(function (done) {
-    //dump.rdb file will be deleted by last test case.
-    child = spawn('redis-server', [__dirname + '/redis.conf']);
-    var doneCalled = false;
-    child.stdout.on('data', function () {
-      if (doneCalled) return;
-      doneCalled = true;
-      done();
-    });
-  });
-
-  after(function (done) {
-    child.kill();
-    child.on('close', function () {
-      done();
-    });
+    //it's the first test case use redis, so flush all
+    qdb.flushall().fin(done);
   });
 
   var userObj = {
