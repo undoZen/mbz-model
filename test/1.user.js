@@ -20,6 +20,14 @@ describe('user model', function () {
       });
     });
   });
+
+  after(function (done) {
+    child.kill();
+    child.on('close', function () {
+      done();
+    });
+  });
+
   var userObj = {
     username: 'undozen',
     password: '123123123',
@@ -68,9 +76,5 @@ describe('user model', function () {
       assert.deepEqual(user, userObj);
       done();
     }).done();
-  });
-
-  after(function () {
-    child.kill();
   });
 });
