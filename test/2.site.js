@@ -1,0 +1,72 @@
+var assert = require('assert');
+var Q = require('q');
+var _ = require('lodash');
+
+var spawn = require('child_process').spawn;
+
+var crypt = require('../utils').crypt;
+var qdb = require('../models/qdb');
+var siteModel = require('../models/site');
+
+describe('site model', function () {
+
+  it('can add site', function (done) {
+    siteModel.qAddSite({
+      name: '面壁計劃',
+      domains: ['www.mianbizhe.com'],
+      ownerId: 1
+    })
+    .then(function (id) {
+      assert.equal(id, 1);
+      done();
+    }).done();
+  });
+
+  it('can add more sites', function (done) {
+    Q.all([siteModel.qAddSite({
+      name: '無用之用',
+      domains: ['www.wuyongzhiyong.com'],
+      ownerId: 1
+    }),
+    siteModel.qAddSite({
+      name: '氣質大自然',
+      domains: ['qznature.mianbz.com', 'www.qznature.com'],
+      ownerId: 2
+    })])
+    .spread(function (id2, id3) {
+      assert.equal(id2, 2);
+      assert.equal(id3, 3);
+      done();
+    }).done();
+  });
+
+  it('can list all sites', function (done) {
+    siteModel.qAllSites()
+    .then(function (sites) {
+      assert.equal(sites.length, 3);
+      done();
+    }).done();
+  });
+
+  it('can list sites by user id', function (done) {
+    siteModel.qSitesByUserId(1)
+    .then(function (sites) {
+      assert.equal(sites.length, 2);
+      siteModel.qSitesByUserId(2)
+      .then(function (sites) {
+        assert.equal(sites.length, 1);
+        done();
+      }).done();
+    }).done();
+  });
+
+  it('can get site by domain', function (done) {
+    Q.all([siteModel.qSiteByDomain('qznature.mianbz.com'), siteModel.qSiteByDomain('www.qznature.com')])
+    .spread(function (site1, site2) {
+      assert.equal(site1.id, site2.id);
+      assert.equal(site1.ownerId, 2);
+      done();
+    }).done();
+  });
+
+});
