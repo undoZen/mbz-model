@@ -41,10 +41,22 @@ describe('collection model', function () {
   });
 
   it('can list all collections', function (done) {
-    collectionModel.qAllCollection()
+    collectionModel.qAllCollections()
     .then(function (collections) {
       assert.equal(collections.length, 3);
       done();
+    }).done();
+  });
+
+  it('can list collections by user id', function (done) {
+    collectionModel.qCollectionsByUserId(1)
+    .then(function (collections) {
+      assert.equal(collections.length, 2);
+      collectionModel.qCollectionsByUserId(2)
+      .then(function (collections) {
+        assert.equal(collections.length, 1);
+        done();
+      }).done();
     }).done();
   });
 

@@ -38,14 +38,28 @@ exports.qAddCollection = function (collection) {
   });
 };
 
-exports.qAllCollection = function (collection) {
-  return qdb.smembers('global:collections')
+exports.qCollectionsByIds = qCollectionsByIds;
+function qCollectionsByIds (pIds) {
+  return Q(pIds)
   .then(function (collectionIds) {
     return qdb.mget(collectionIds.map(mapPrependString('collection:')));
   })
   .then(function (collectionJsons) {
     return collectionJsons.map(mapJsonParse);
   })
+}
+
+exports.qCollectionsByUserId = function (pId) {
+  return Q(pId)
+  .then(function (id) {
+    return qdb.smembers('user:'+id+':collections')
+  })
+  .then(qCollectionsByIds)
+};
+
+exports.qAllCollections = function (collection) {
+  return qdb.smembers('global:collections')
+  .then(qCollectionsByIds)
 };
 
 /*

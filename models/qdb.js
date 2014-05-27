@@ -11,6 +11,5 @@ for (var k in db) {
 }
 
 db.on('error', console.log.bind(console));
-db.on('end', console.log.bind(console));
 
 module.exports = qdb;
