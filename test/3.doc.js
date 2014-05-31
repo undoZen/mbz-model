@@ -14,6 +14,8 @@ describe('user model', function () {
     .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doc.sql', 'utf-8')))
     .then(knex.raw.bind(knex, 'drop table if exists doch;'))
     .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doch.sql', 'utf-8')))
+    .then(knex.raw.bind(knex, 'drop table if exists doclink;'))
+    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doclink.sql', 'utf-8')))
     .then(function () {
       done();
     }, done);
@@ -64,7 +66,7 @@ describe('user model', function () {
       userId: 1,
       siteId: 1,
       slug: '/hello',
-      content: '#Hello, World!\nI\'m [][undoZen].',
+      content: '#Hello, World!\nI\'m [][undoZen] on [][mian bi zhe].',
       published: true
     })
     .then(function (doc) {
