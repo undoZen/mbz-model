@@ -10,9 +10,10 @@ var docModel = require('../models/doc');
 describe('user model', function () {
 
   before(function (done) {
-    var sql = fs.readFileSync(__dirname + '/../models/doc.sql', 'utf-8');
     knex.raw('drop table if exists doc;')
-    .then(knex.raw.bind(knex, sql))
+    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doc.sql', 'utf-8')))
+    .then(knex.raw.bind(knex, 'drop table if exists doch;'))
+    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doch.sql', 'utf-8')))
     .then(function () {
       done();
     }, done);
@@ -32,7 +33,6 @@ describe('user model', function () {
     }).done();
   });
 
-  /*
   it('can get docs by siteId and docId', function (done) {
     docModel.qGetDocs({
       siteId: 1,
@@ -75,12 +75,11 @@ describe('user model', function () {
       });
     })
     .then(function (docs) {
-      assert.equal(docs.filter(function (doc) { return doc.history; }).length, 1);
-      assert.equal(docs.filter(function (doc) { return !doc.history; }).length, 1);
-      assert.equal(docs.length, 2);
+      //assert.equal(docs.filter(function (doc) { return doc.history; }).length, 1);
+      //assert.equal(docs.filter(function (doc) { return !doc.history; }).length, 1);
+      assert.equal(docs.length, 1);
       done();
     }).done();
   });
-  */
 
 });

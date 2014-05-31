@@ -2,6 +2,7 @@ var fs = require('fs');
 
 var Q = require('q');
 var marked = require('marked');
+var debug = require('debug')('model:doc');
 
 var knex = require('./knex');
 var qdb = require('./qdb');
@@ -16,10 +17,19 @@ exports.qSaveDoc = function(doc) {
   if (!doc.siteId) throw new Error('doc.siteId is required');
   return siteModel.qSiteById(doc.siteId)
   .then(function (site) {
+    var queryObj = {siteId: doc.siteId, slug: doc.slug};
     if (site.ownerId != doc.userId) throw new Error('this user can not save to this site');
-    return qGetOneDoc({siteId: doc.siteId, slug: doc.slug})
+    return qGetOneDoc(queryObj)
     .then(function (oldDoc) {
       if (oldDoc) {
+        return Q(knex('doch').insert(oldDoc))
+        .then(function (historyId) {
+          return knex('doc').where(queryObj).update(doc);
+        })
+        .then(function (numRowsAffected) {
+          debug(numRowsAffected);
+          return oldDoc.docId;
+        })
       } else {
         return knex('doc').insert(doc);
       }
