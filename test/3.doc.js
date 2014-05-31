@@ -31,8 +31,20 @@ describe('user model', function () {
     })
     .then(function (doc) {
       assert.equal(doc.docId, 1);
+      return docModel.qSaveDoc({
+        userId: 1,
+        siteId: 1,
+        slug: '/undoZen',
+        content: '#Introduce @undoZen\nhello~',
+        published: true
+      })
+    })
+    .then(function (doc) {
+      assert.equal(doc.docId, 2);
+      assert.equal(doc.slug, '/undozen');
       done();
-    }).done();
+    })
+    .done();
   });
 
   it('can get docs by siteId and docId', function (done) {
@@ -66,7 +78,7 @@ describe('user model', function () {
       userId: 1,
       siteId: 1,
       slug: '/hello',
-      content: '#Hello, World!\nI\'m [][undoZen] on [][mian bi zhe].',
+      content: '#Hello, World!\nI\'m [][undoZen] on [][mian bi zhe]. creator of [MianBiZhe.com][this site]',
       published: true
     })
     .then(function (doc) {
@@ -82,6 +94,18 @@ describe('user model', function () {
       assert.equal(docs.length, 1);
       done();
     }).done();
+  });
+
+  it('can get doc with auto-generated title and doclinks', function (done) {
+    docModel.qGetOneDoc({
+      siteId: 1,
+      slug: '/hello'
+    })
+    .then(function (doc) {
+      assert.equal(doc.title, 'Hello, World!');
+      done();
+    })
+    .done();
   });
 
 });

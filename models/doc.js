@@ -13,6 +13,12 @@ var env = process.env.NODE_ENV || 'development';
 /* reflink [链接文字][/link_target] 形式的站内链接 */
 var reflink = /\[((?:\[[^\]]*\]|[^\]]|\](?=[^\[]*\]))*)\]\[([^\]]*)\]/g;
 
+function normalizeSlug(slug) {
+  slug = slug.toLowerCase().replace(/\s/g, '_');
+  slug = slug[0] == '/' ? slug : '/' + slug;
+  return slug;
+}
+
 function qSaveDocLinks(doc) {
   return Q(knex('doclink').where({fromSiteId: doc.siteId, fromSlug: doc.slug}).del())
   .then(function (numRowsAffected) {
@@ -20,8 +26,7 @@ function qSaveDocLinks(doc) {
     doc.content.replace(reflink, function (all, title, slug) {
       debug('%j', arguments);
       if (slug) {
-        slug = slug.toLowerCase().replace(/\s/g, '_');
-        slug = slug[0] == '/' ? slug : '/' + slug;
+        slug = normalizeSlug(slug);
         qs.push({
           fromSiteId: doc.siteId,
           fromSlug: doc.slug,
@@ -51,9 +56,15 @@ exports.qSaveDoc = function(doc) {
   .then(function (site) {
     var queryObj = {siteId: doc.siteId, slug: doc.slug};
     if (site.ownerId != doc.userId) throw new Error('this user can not save to this site');
+    doc.title = doc.content.trim().replace(/^#+/, '').split(/\r?\n/)[0];
+    doc.slug = slug = normalizeSlug(doc.slug);
+    if (!doc.title) doc.title = doc.slug;
+    else if (doc.title.length > 50) doc.title = doc.title.substring(0, 47) + '...';
     return qGetOneDoc(queryObj)
     .then(function (oldDoc) {
       if (oldDoc) {
+        debug('%j', oldDoc);
+        if ('html' in oldDoc) delete oldDoc.html;
         return Q(knex('doch').insert(oldDoc))
         .then(function (historyId) {
           return knex('doc').where(queryObj).update(doc);
@@ -75,9 +86,43 @@ exports.qSaveDoc = function(doc) {
   .then(qSaveDocLinks)
 };
 
+function addHtml(doc, titles) {
+  doc.html = marked(doc.content);
+  doc.html = doc.html.replace(reflink, function (all, title, slug) {
+    if (!slug) return title;
+    slug = normalizeSlug(slug);
+    title = title || titles[slug] || slug;
+    return '<a href="' + slug + '">' + title + '</a>';
+  });
+  return doc;
+}
+
+function decDocLinks(qDoc) {
+  return Q(qDoc)
+  .then(function (doc) {
+    if (!doc) return doc;
+    var query = knex('doclink')
+      .column('doclink.toSiteId as siteId', 'doclink.toSlug as slug', 'doc.title')
+      .join('doc', function () {
+        this.on('doclink.toSiteId', '=', 'doc.siteId');
+        this.on('doclink.toSlug', '=', 'doc.slug');
+      }, 'left')
+      .where({fromSiteId: doc.siteId, fromSlug: doc.slug})
+    return Q(query.select())
+    .then(function (results) {
+      var titles = {};
+      results.forEach(function (t) {
+        titles[t.slug] = t.title;
+      });
+      return addHtml(doc, titles);
+    })
+  })
+}
+
 exports.qGetOneDoc = qGetOneDoc;
 function qGetOneDoc(where) {
-  return qGetDocs(where).get(0);
+  return qGetDocs(where).get(0)
+  .then(decDocLinks)
 };
 
 exports.qGetDocs = qGetDocs;
