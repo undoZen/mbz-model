@@ -17,14 +17,15 @@ function fPrependString(str) {
 
 exports.qAddSite = function (site) {
   var c = _.extend({}, site);
-  if (!c.domains) throw new Error('domains is required');
-  var dprops = c.domains.map(function (d) {
+  if (!c.domain) throw new Error('domain is required');
+  var domains = c.customDomain ? [c.domain, c.customDomain] : [c.domain];
+  var dprops = domains.map(function (d) {
     return 'domain2id:' + d;
   });
   return qdb.mget(dprops)
   .then(function (idsByDomain) {
     for (var i in idsByDomain) {
-      if (idsByDomain[i]) throw new Error('domain '+c.domains[i]+' exists');
+      if (idsByDomain[i]) throw new Error('domain '+domains[i]+' exists');
     }
     return qdb.incr('global:siteCount')
   })

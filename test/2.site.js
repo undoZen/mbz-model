@@ -13,7 +13,8 @@ describe('site model', function () {
   it('can add site', function (done) {
     siteModel.qAddSite({
       name: '面壁計劃',
-      domains: ['www.mianbizhe.com'],
+      domain: 'www.mian.bz',
+      customDomain: 'www.mianbizhe.com',
       ownerId: 1
     })
     .then(function (id) {
@@ -25,12 +26,13 @@ describe('site model', function () {
   it('can add more sites', function (done) {
     Q.all([siteModel.qAddSite({
       name: '無用之用',
-      domains: ['www.wuyongzhiyong.com'],
+      domain: 'wyzy.mian.bz',
       ownerId: 1
     }),
     siteModel.qAddSite({
       name: '氣質大自然',
-      domains: ['qznature.mianbz.com', 'www.qznature.com'],
+      domain: 'qznature.mianbz.com',
+      customDomain: 'www.qznature.com',
       ownerId: 2
     })])
     .spread(function (id2, id3) {
