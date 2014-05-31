@@ -11,7 +11,7 @@ describe('user model', function () {
 
   before(function (done) {
     var sql = fs.readFileSync(__dirname + '/../models/doc.sql', 'utf-8');
-    knex.raw('drop table doc;')
+    knex.raw('drop table if exists doc;')
     .then(knex.raw.bind(knex, sql))
     .then(function () {
       done();
@@ -67,7 +67,7 @@ describe('user model', function () {
       userId: 1,
       siteId: 1,
       slug: '/hello',
-      content: 'Hello, World! I\'m [][undoZen].',
+      content: '#Hello, World!\nI\'m [][undoZen].',
       published: true
     })
     .then(function (doc) {
