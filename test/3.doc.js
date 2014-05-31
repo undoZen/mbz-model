@@ -18,10 +18,6 @@ describe('user model', function () {
     }, done);
   });
 
-  it('will be ok', function () {
-    assert(true);
-  });
-
   it('can save doc and return saved doc', function (done) {
     docModel.qSaveDoc({
       userId: 1,
@@ -36,6 +32,7 @@ describe('user model', function () {
     }).done();
   });
 
+  /*
   it('can get docs by siteId and docId', function (done) {
     docModel.qGetDocs({
       siteId: 1,
@@ -84,5 +81,6 @@ describe('user model', function () {
       done();
     }).done();
   });
+  */
 
 });

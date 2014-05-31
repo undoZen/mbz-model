@@ -1,5 +1,5 @@
 create table if not exists doc (
-  docId int(11) unsigned not null,
+  id int(11) unsigned not null unique auto_increment,
   userId int(11) unsigned not null,
   siteId int(11) unsigned not null,
   slug text not null,

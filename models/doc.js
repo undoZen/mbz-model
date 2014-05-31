@@ -17,27 +17,26 @@ exports.qSaveDoc = function(doc) {
   return siteModel.qSiteById(doc.siteId)
   .then(function (site) {
     if (site.ownerId != doc.userId) throw new Error('this user can not save to this site');
-    return knex('doc').where({siteId: doc.siteId, slug: doc.slug}).update({history: true})
-    .then(function (docsUpdated) {
-      return docsUpdated
-        ? qGetOneDoc({siteId: doc.siteId, slug: doc.slug}).get('docId')
-        : qdb.incr('global:docCount');
+    return qGetOneDoc({siteId: doc.siteId, slug: doc.slug})
+    .then(function (oldDoc) {
+      if (oldDoc) {
+      } else {
+        return knex('doc').insert(doc);
+      }
     })
   })
   .then(function (docId) {
     doc.docId = docId;
-    return knex('doc').insert(doc)
-  })
-  .then(function () {
     return doc;
   })
 };
 
 exports.qGetOneDoc = qGetOneDoc;
 function qGetOneDoc(where) {
-  return Q(knex('doc').where(where)).get(0);
+  return qGetDocs(where).get(0);
 };
 
-exports.qGetDocs = function(where) {
-  return Q(knex('doc').where(where));
-};
+exports.qGetDocs = qGetDocs;
+function qGetDocs(where) {
+  return Q(knex('doc').where(where).select());
+}
