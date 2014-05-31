@@ -62,4 +62,27 @@ describe('user model', function () {
     }).done();
   });
 
+  it('can save new version of a doc if slug exists', function (done) {
+    docModel.qSaveDoc({
+      userId: 1,
+      siteId: 1,
+      slug: '/hello',
+      content: 'Hello, World! I\'m [][undoZen].',
+      published: true
+    })
+    .then(function (doc) {
+      assert.equal(doc.docId, 1);
+      return docModel.qGetDocs({
+        siteId: 1,
+        docId: 1
+      });
+    })
+    .then(function (docs) {
+      assert.equal(docs.filter(function (doc) { return doc.history; }).length, 1);
+      assert.equal(docs.filter(function (doc) { return !doc.history; }).length, 1);
+      assert.equal(docs.length, 2);
+      done();
+    }).done();
+  });
+
 });

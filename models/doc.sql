@@ -6,9 +6,9 @@ create table if not exists doc (
   title text,
   content mediumtext,
   html mediumtext,
-  autoSaved boolean,
-  published boolean,
-  history boolean,
+  autoSaved boolean not null default 0,
+  published boolean not null default 0,
+  history boolean not null default 0,
   createdAt timestamp not null default current_timestamp,
   updatedAt timestamp not null default current_timestamp on update current_timestamp
 ) engine=MyISAM default charset=utf8;
