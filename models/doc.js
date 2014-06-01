@@ -90,9 +90,9 @@ function addHtml(doc, titles) {
   doc.html = marked(doc.content);
   doc.html = doc.html.replace(reflink, function (all, title, slug) {
     if (!slug) return title;
-    slug = normalizeSlug(slug);
-    title = title || titles[slug] || slug;
-    return '<a href="' + slug + '">' + title + '</a>';
+    var rslug = normalizeSlug(slug);
+    title = title || titles[rslug] || slug.replace(/^\//, '');
+    return '<a href="' + rslug + '">' + title + '</a>';
   });
   return doc;
 }
