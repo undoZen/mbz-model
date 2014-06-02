@@ -1,4 +1,6 @@
 var assert = require('assert');
+var fs = require('fs');
+
 var Q = require('q');
 var _ = require('lodash');
 
@@ -6,9 +8,18 @@ var spawn = require('child_process').spawn;
 
 var crypt = require('../utils').crypt;
 var qdb = require('../models/qdb');
+var knex = require('../models/knex');
 var siteModel = require('../models/site');
 
 describe('site model', function () {
+
+  before(function (done) {
+    knex.raw('drop table if exists site;')
+    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/site.sql', 'utf-8')))
+    .then(function () {
+      done();
+    }, done);
+  });
 
   it('can add site', function (done) {
     siteModel.qAddSite({
@@ -64,6 +75,15 @@ describe('site model', function () {
 
   it('can get site by domain', function (done) {
     Q.all([siteModel.qSiteByDomain('qznature.mianbz.com'), siteModel.qSiteByDomain('www.qznature.com')])
+    .spread(function (site1, site2) {
+      assert.equal(site1.id, site2.id);
+      assert.equal(site1.ownerId, 2);
+      done();
+    }).done();
+  });
+
+  it('can get site by id', function (done) {
+    Q.all([siteModel.qSiteById(3), siteModel.qSiteByDomain('www.qznature.com')])
     .spread(function (site1, site2) {
       assert.equal(site1.id, site2.id);
       assert.equal(site1.ownerId, 2);

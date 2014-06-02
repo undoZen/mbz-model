@@ -51,15 +51,25 @@ function decTitle(doc) {
 }
 
 exports.qSaveDoc = function(doc) {
-  if (!doc.siteId) throw new Error('doc.siteId is required');
-  return siteModel.qSiteById(doc.siteId)
+  if (!doc.siteId && !doc.domain) throw new Error('doc.siteId or doc.domain is required');
+  var qSite;
+  if (doc.domain) {
+    qSite = siteModel.qSiteByDomain(doc.domain);
+    delete doc.domain;
+  } else {
+    qSite = siteModel.qSiteById(doc.siteId);
+  }
+  return qSite
   .then(function (site) {
+    if (!site) throw new Error('site not found');
     var queryObj = {siteId: doc.siteId, slug: doc.slug};
     if (site.ownerId != doc.userId) throw new Error('this user can not save to this site');
-    doc.title = doc.content.trim().replace(/^#+/, '').split(/\r?\n/)[0];
-    doc.slug = slug = normalizeSlug(doc.slug);
-    if (!doc.title) doc.title = doc.slug;
-    else if (doc.title.length > 50) doc.title = doc.title.substring(0, 47) + '...';
+    if (!doc.title) {
+      doc.title = doc.content.trim().replace(/^#+/, '').split(/\r?\n/)[0];
+      doc.slug = slug = normalizeSlug(doc.slug);
+      if (!doc.title) doc.title = doc.slug;
+      else if (doc.title.length > 50) doc.title = doc.title.substring(0, 47) + '...';
+    }
     return qGetOneDoc(queryObj)
     .then(function (oldDoc) {
       if (oldDoc) {
