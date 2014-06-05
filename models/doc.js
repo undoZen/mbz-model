@@ -4,8 +4,8 @@ var Q = require('q');
 var marked = require('marked');
 var debug = require('debug')('model:doc');
 
-var knex = require('./knex');
-var qdb = require('./qdb');
+var knex = require('../lib/db/knex');
+var qdb = require('../lib/db/qdb');
 var siteModel = require('./site');
 
 var env = process.env.NODE_ENV || 'development';

@@ -1,6 +1,6 @@
 var Q = require('q');
 
-var qdb = require('./qdb');
+var qdb = require('../lib/db/qdb');
 var crypt = require('../utils').crypt;
 
 exports.qAddUser = function (user) {

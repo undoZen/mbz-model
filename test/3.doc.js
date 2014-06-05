@@ -4,7 +4,7 @@ var Q = require('q');
 
 var spawn = require('child_process').spawn;
 
-var knex = require('../models/knex');
+var knex = require('../lib/db/knex');
 var docModel = require('../models/doc');
 
 describe('user model', function () {
