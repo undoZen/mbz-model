@@ -108,4 +108,24 @@ describe('user model', function () {
     .done();
   });
 
+  it('change referee doc update referer doc.html', function (done) {
+    docModel.qSaveDoc({
+      userId: 1,
+      siteId: 1,
+      slug: '/undoZen',
+      content: '#Hi, I\'m @undoZen\nhello~',
+      published: true
+    })
+    .then(function (doc) {
+      assert(doc.docId > 1)
+      console.log(doc);
+      return docModel.qGetOneDoc({siteId: 1, docId: 1});
+    })
+    .then(function (doc1) {
+      console.log(doc1);
+      done();
+    })
+    .done();
+  });
+
 });

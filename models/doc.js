@@ -1,3 +1,5 @@
+'use strict';
+
 var fs = require('fs');
 
 var Q = require('q');
@@ -7,6 +9,7 @@ var debug = require('debug')('model:doc');
 var knex = require('../lib/db/knex');
 var qdb = require('../lib/db/qdb');
 var siteModel = require('./site');
+var cache = require('../lib/cache');
 
 var env = process.env.NODE_ENV || 'development';
 
@@ -50,6 +53,27 @@ function decTitle(doc) {
   return doc;
 }
 
+function docLinks(f_t, qDoc) {
+  return Q(qDoc)
+  .then(function (doc) {
+    var op = {to: 'from', from: 'to'};
+    var where = {};
+    where[op[f_t]+'SiteId'] = doc.siteId;
+    where[op[f_t]+'Slug'] = doc.slug;
+    var query = knex('doclink')
+      .column('doc.siteId', 'doc.docId', 'doc.slug', 'doc.title')
+      .join('doc', function () {
+        this.on('doclink.'+f_t+'SiteId', '=', 'doc.siteId');
+        this.on('doclink.'+f_t+'Slug', '=', 'doc.slug');
+      }, 'left')
+      .where(where);
+    debug('docLinks'+f_t.toUpperCase()+' query: %s', query);
+    return query.select();
+  })
+}
+var docLinksTo = docLinks.bind(null, 'to');
+var docLinksFrom = docLinks.bind(null, 'from');
+
 exports.qSaveDoc = function(doc) {
   if (!doc.siteId) throw new Error('doc.siteId is required');
   return siteModel.qSiteById(doc.siteId)
@@ -60,13 +84,23 @@ exports.qSaveDoc = function(doc) {
     doc.slug = slug = normalizeSlug(doc.slug);
     if (!doc.title) doc.title = doc.slug;
     else if (doc.title.length > 50) doc.title = doc.title.substring(0, 47) + '...';
+    debug('before save: %j', doc);
     return qGetOneDoc(queryObj)
     .then(function (oldDoc) {
+      debug('oldDoc: %j', oldDoc);
       if (oldDoc) {
         debug('%j', oldDoc);
         if ('html' in oldDoc) delete oldDoc.html;
-        return Q(knex('doch').insert(oldDoc))
-        .then(function (historyId) {
+        return Q([sumkey(oldDoc), docLinksFrom(oldDoc)])
+        .spread(function (cacheKey, linksFrom) {
+          debug('linksFrom: %j', linksFrom);
+          var ids = linksFrom.map(sumkey).concat(cacheKey);
+          debug('cacheKeys: %j', ids);
+          return qdb.del(ids);
+        })
+        .then(function (deletedCache) {
+          debug('deletedCache: %s', deletedCache)
+          knex('doch').insert(oldDoc)
           return knex('doc').where(queryObj).update(doc);
         })
         .then(function (numRowsAffected) {
@@ -97,19 +131,14 @@ function addHtml(doc, titles) {
   return doc;
 }
 
-function decDocLinks(qDoc) {
+var decDocLinks = function (qDoc) {
   return Q(qDoc)
   .then(function (doc) {
     if (!doc) return doc;
-    var query = knex('doclink')
-      .column('doclink.toSiteId as siteId', 'doclink.toSlug as slug', 'doc.title')
-      .join('doc', function () {
-        this.on('doclink.toSiteId', '=', 'doc.siteId');
-        this.on('doclink.toSlug', '=', 'doc.slug');
-      }, 'left')
-      .where({fromSiteId: doc.siteId, fromSlug: doc.slug})
-    return Q(query.select())
+    console.log(doc);
+    return docLinksTo(doc)
     .then(function (results) {
+      debug('docLinksTo results: %j', results);
       var titles = {};
       results.forEach(function (t) {
         titles[t.slug] = t.title;
@@ -118,11 +147,26 @@ function decDocLinks(qDoc) {
     })
   })
 }
+function sumkey(doc) {
+    debug('sumkey doc: %j', doc);
+    var result = 'cache:' + doc.siteId + ':' + doc.docId;
+    debug('sumkey result: %s', result);
+    return result;
+}
+//*
+decDocLinks = cache(decDocLinks, sumkey, '');
+//console.log(decDocLinks.toString());
+//console.log(decDocLinks(1));
+//*/
 
 exports.qGetOneDoc = qGetOneDoc;
 function qGetOneDoc(where) {
+  debug('qGetOneDoc where: %j', where);
   return qGetDocs(where).get(0)
-  .then(decDocLinks)
+  .then(function (doc) {
+    debug('qGetOneDoc before decDocLinks: %j', doc);
+    return decDocLinks(doc);
+  })
 };
 
 exports.qGetDocs = qGetDocs;
