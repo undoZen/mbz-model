@@ -1,25 +1,12 @@
 var assert = require('assert');
-var fs = require('fs');
 
 var Q = require('q');
 var _ = require('lodash');
 
-var spawn = require('child_process').spawn;
-
 var crypt = require('../utils').crypt;
-var knex = require('../lib/db/knex');
-var qdb = require('../lib/db/qdb');
 var siteModel = require('../models/site');
 
 describe('site model', function () {
-
-  before(function (done) {
-    knex.raw('drop table if exists site;')
-    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/site.sql', 'utf-8')))
-    .then(function () {
-      done();
-    }, done);
-  });
 
   it('can add site', function (done) {
     siteModel.qAddSite({

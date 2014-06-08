@@ -1,25 +1,9 @@
-var fs = require('fs');
 var assert = require('assert');
 var Q = require('q');
 
-var spawn = require('child_process').spawn;
-
-var knex = require('../lib/db/knex');
 var docModel = require('../models/doc');
 
 describe('user model', function () {
-
-  before(function (done) {
-    knex.raw('drop table if exists doc;')
-    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doc.sql', 'utf-8')))
-    .then(knex.raw.bind(knex, 'drop table if exists doch;'))
-    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doch.sql', 'utf-8')))
-    .then(knex.raw.bind(knex, 'drop table if exists doclink;'))
-    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/doclink.sql', 'utf-8')))
-    .then(function () {
-      done();
-    }, done);
-  });
 
   it('can save doc and return saved doc', function (done) {
     docModel.qSaveDoc({

@@ -3,6 +3,7 @@ var _ = require('lodash');
 
 var knex = require('../lib/db/knex');
 var qdb = require('../lib/db/qdb');
+var cache = require('../lib/cache');
 var crypt = require('../utils').crypt;
 
 exports.qAddUser = function (user) {
@@ -38,21 +39,7 @@ exports.qAddUser = function (user) {
   })
 };
 
-exports.qGetUserById = function (id) {
-  return qGetUserByQueryObj({id: id});
-  if (!id) return Q({id: -1});
-  return qdb.get('user:'+id)
-  .then(function (userStr) {
-    return JSON.parse(userStr);
-  });
-};
-
-exports.qGetUserByUsername = function (username) {
-  return qGetUserByQueryObj({username: username});
-};
-
-exports.qGetUserByQueryObj = qGetUserByQueryObj;
-function qGetUserByQueryObj(queryObj) {
+var qGetUserByQueryObj = exports.qGetUserByQueryObj = function (queryObj) {
   var pNotFound = Q({id: -1});
   return Q(knex('user').where(queryObj).select())
   .then(function (results) {
@@ -61,9 +48,23 @@ function qGetUserByQueryObj(queryObj) {
   return qdb.get('username2id:'+username.toLowerCase())
   .then(function (id) {
     if (!id) return pNotFound;
-    return exports.qGetUserById(id);
+    return qGetUserById(id);
   });
+};
+
+function sumkey(queryObj) {
+  return _.reduce(queryObj, function (t, v, k) {return [t,k,v].join(':');},'cache')
 }
+qGetUserByQueryObj = cache(qGetUserByQueryObj, sumkey);
+
+exports.qGetUserById = qGetUserById;
+function qGetUserById(id) {
+  return qGetUserByQueryObj({id: id});
+};
+
+exports.qGetUserByUsername = function (username) {
+  return qGetUserByQueryObj({username: username});
+};
 
 exports.qGetUserByEmail = function (email) {
   return qGetUserByQueryObj({email: email});
@@ -72,6 +73,6 @@ exports.qGetUserByEmail = function (email) {
   return qdb.get('email2id:' + email.toLowerCase())
   .then(function (id) {
     if (!id) return pNotFound;
-    return exports.qGetUserById(id);
+    return qGetUserById(id);
   });
 };

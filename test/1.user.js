@@ -1,25 +1,12 @@
 var assert = require('assert');
-var fs = require('fs');
 var Q = require('q');
 
-var knex = require('../lib/db/knex');
 var _ = require('lodash');
 
 var crypt = require('../utils').crypt;
-var qdb = require('../lib/db/qdb');
 var userModel = require('../models/user');
 
 describe('user model', function () {
-  before(function (done) {
-    //it's the first test case use redis, so flush all
-    qdb.flushall()
-    .then(knex.raw.bind(knex, 'drop table if exists user;'))
-    .then(knex.raw.bind(knex, fs.readFileSync(__dirname + '/../models/user.sql', 'utf-8')))
-    .then(function () {
-      done();
-    }, done)
-    .done();
-  });
 
   var userObj = {
     username: 'undozen',
@@ -58,6 +45,7 @@ describe('user model', function () {
     .then(function (user) {
       delete user.password;
       delete user.createdAt;
+      delete user.updatedAt;
       assert.deepEqual(user, userObj);
       done();
     }).done();
@@ -68,6 +56,7 @@ describe('user model', function () {
     .then(function (user) {
       delete user.password;
       delete user.createdAt;
+      delete user.updatedAt;
       assert.deepEqual(user, userObj);
       done();
     }).done();
@@ -78,6 +67,7 @@ describe('user model', function () {
     .then(function (user) {
       delete user.password;
       delete user.createdAt;
+      delete user.updatedAt;
       assert.deepEqual(user, userObj);
       done();
     }).done();
@@ -110,6 +100,7 @@ describe('user model', function () {
     .then(function (user) {
       delete user.password;
       delete user.createdAt;
+      delete user.updatedAt;
       assert.deepEqual(user, userObj);
       return userModel.qAddUser(uo);
     })
@@ -126,6 +117,7 @@ describe('user model', function () {
     .then(function (user) {
       delete user.password;
       delete user.createdAt;
+      delete user.updatedAt;
       assert.deepEqual(user, userObj);
       return userModel.qAddUser(uo);
     })
