@@ -4,7 +4,7 @@ var Q = require('q');
 
 var spawn = require('child_process').spawn;
 
-var knex = require('../models/knex');
+var knex = require('../lib/db/knex');
 var docModel = require('../models/doc');
 
 describe('user model', function () {
@@ -103,6 +103,24 @@ describe('user model', function () {
     })
     .then(function (doc) {
       assert.equal(doc.title, 'Hello, World!');
+      done();
+    })
+    .done();
+  });
+
+  it('change referee doc update referer doc.html', function (done) {
+    docModel.qSaveDoc({
+      userId: 1,
+      siteId: 1,
+      slug: '/undoZen',
+      content: '#Hi, I\'m @undoZen\nhello~',
+      published: true
+    })
+    .then(function (doc) {
+      assert(doc.docId > 1)
+      return docModel.qGetOneDoc({siteId: 1, docId: 1});
+    })
+    .then(function (doc1) {
       done();
     })
     .done();

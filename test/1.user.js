@@ -2,11 +2,11 @@ var assert = require('assert');
 var fs = require('fs');
 var Q = require('q');
 
-var knex = require('../models/knex');
+var knex = require('../lib/db/knex');
 var _ = require('lodash');
 
 var crypt = require('../utils').crypt;
-var qdb = require('../models/qdb');
+var qdb = require('../lib/db/qdb');
 var userModel = require('../models/user');
 
 describe('user model', function () {

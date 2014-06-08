@@ -7,8 +7,8 @@ var _ = require('lodash');
 var spawn = require('child_process').spawn;
 
 var crypt = require('../utils').crypt;
-var qdb = require('../models/qdb');
-var knex = require('../models/knex');
+var knex = require('../lib/db/knex');
+var qdb = require('../lib/db/qdb');
 var siteModel = require('../models/site');
 
 describe('site model', function () {

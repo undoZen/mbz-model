@@ -1,8 +1,8 @@
 var Q = require('q');
 var _ = require('lodash');
 
-var qdb = require('./qdb');
-var knex = require('./knex');
+var knex = require('../lib/db/knex');
+var qdb = require('../lib/db/qdb');
 var crypt = require('../utils').crypt;
 
 exports.qAddUser = function (user) {
