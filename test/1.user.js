@@ -6,7 +6,6 @@ var supertest = require('supertest');
 var _ = require('lodash');
 
 var crypt = require('../utils').crypt;
-var userModel = require('../models/user');
 var app = require('../');
 
 describe('user model', function () {
