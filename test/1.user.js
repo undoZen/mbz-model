@@ -1,10 +1,13 @@
 var assert = require('assert');
 var Q = require('q');
+var express = require('express');
+var supertest = require('supertest');
 
 var _ = require('lodash');
 
 var crypt = require('../utils').crypt;
 var userModel = require('../models/user');
+var app = require('../');
 
 describe('user model', function () {
 
@@ -14,117 +17,99 @@ describe('user model', function () {
     email: 'undozen@gmail.com'
   };
 
-  it('can save user', function (done) {
-    userModel.qAddUser(userObj)
-    .then(function (id) {
-      assert.equal(id, 1);
-      done();
-    }).done();
-  });
-  
-  it('not save password in plain', function (done) {
-    userModel.qGetUserById(1)
-    .then(function (user) {
-      assert.notEqual(user.password, userObj.password);
-      done();
-    }).done();
-  });
-
-  it('could check password use utils.crypt.vhash', function (done) {
-    userModel.qGetUserById(1)
-    .then(function (user) {
-      assert(crypt.vhash(userObj.password, user.password));
-      delete userObj.password;
-      userObj.id = 1;
-      done();
-    }).done();
+  it('can save user and not save password in plain', function (done) {
+    supertest(app)
+      .post('/user')
+      .type('json')
+      .send(userObj)
+      .expect(201, function (err, res) {
+        assert.ok(!err);
+        assert.equal(res.body.id, 1);
+        userObj.id = res.body.id;
+        assert.equal(res.body.username, userObj.username);
+        assert.equal(res.body.email, userObj.email);
+        assert.notEqual(res.body.password, userObj.password);
+        done();
+      });
   });
 
-  it('can get user by id', function (done) {
-    userModel.qGetUserById(1)
-    .then(function (user) {
-      delete user.password;
-      delete user.createdAt;
-      delete user.updatedAt;
-      assert.deepEqual(user, userObj);
-      done();
-    }).done();
+  it('can get user by id and check password', function (done) {
+    supertest(app)
+      .get('/user/1')
+      .expect(200, function (err, res) {
+        assert.ok(!err);
+        assert(crypt.vhash(userObj.password, res.body.password));
+        delete userObj.password;
+        var user = res.body;
+        delete user.password;
+        delete user.createdAt;
+        delete user.updatedAt;
+        assert.deepEqual(user, userObj);
+        done();
+      });
   });
+
+  function getBy(prop, value, done, conti) {
+    supertest(app)
+      .get('/user?'+prop+'='+value)
+      .expect(200, function (err, res) {
+        assert.ok(!err);
+        var user = res.body;
+        delete user.password;
+        delete user.createdAt;
+        delete user.updatedAt;
+        assert.deepEqual(user, userObj);
+        if (conti) done(user);
+        else done();
+      });
+  }
 
   it('can get user by username', function (done) {
-    userModel.qGetUserByUsername(userObj.username)
-    .then(function (user) {
-      delete user.password;
-      delete user.createdAt;
-      delete user.updatedAt;
-      assert.deepEqual(user, userObj);
-      done();
-    }).done();
+    getBy('username', userObj.username, done);
   });
 
   it('can get user by email', function (done) {
-    userModel.qGetUserByEmail(userObj.email)
-    .then(function (user) {
-      delete user.password;
-      delete user.createdAt;
-      delete user.updatedAt;
-      assert.deepEqual(user, userObj);
-      done();
-    }).done();
+    getBy('email', userObj.email, done);
   });
+
+  function testConflict(uo, prop, done) {
+    supertest(app)
+      .post('/user')
+      .type('json')
+      .send(uo)
+      .expect(400, function (err, res) {
+        assert.ok(!err);
+        assert.equal(res.body.error_message, prop + ' already exists');
+        done();
+      });
+  }
 
   it('will throw error when username conflict', function (done) {
     var uo = _.extend({}, userObj);
     delete uo.id;
-    userModel.qAddUser(uo)
-    .fail(function (err) {
-      assert.equal(err.message, 'username already exists');
-      done();
-    }).done();
+    testConflict(uo, 'username', done);
   });
 
   it('will throw error when email conflict', function (done) {
     var uo = _.extend({}, userObj, {username:'helloworld'});
     delete uo.id;
-    userModel.qAddUser(uo)
-    .fail(function (err) {
-      assert.equal(err.message, 'email already exists');
-      done();
-    }).done();
+    testConflict(uo, 'email', done);
   });
 
   it('username should be case-insensitive', function (done) {
     var uo = _.extend({}, userObj, {username:'undoZen'});
     delete uo.id;
-    userModel.qGetUserByUsername(uo.username)
-    .then(function (user) {
-      delete user.password;
-      delete user.createdAt;
-      delete user.updatedAt;
-      assert.deepEqual(user, userObj);
-      return userModel.qAddUser(uo);
-    })
-    .fail(function (err) {
-      assert.equal(err.message, 'username already exists');
-      done();
-    }).done();
+    getBy('username', uo.username, function (user) {
+      testConflict(uo, 'username', done);
+    }, true);
   });
 
   it('email should be case-insensitive', function (done) {
     var uo = _.extend({}, userObj, {username: 'helloworld', email: 'undoZen@GMail.com'});
     delete uo.id;
-    userModel.qGetUserByEmail(uo.email)
-    .then(function (user) {
-      delete user.password;
-      delete user.createdAt;
-      delete user.updatedAt;
-      assert.deepEqual(user, userObj);
-      return userModel.qAddUser(uo);
-    })
-    .fail(function (err) {
-      assert.equal(err.message, 'email already exists');
-      done();
-    }).done();
+    getBy('email', uo.email, function (user) {
+      testConflict(uo, 'email', done);
+    }, true);
   });
 
 });

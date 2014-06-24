@@ -12,12 +12,13 @@ exports.qAddUser = function (user) {
   return Q(knex('user').insert(u))
   //.then(knex('user').insert.bind(knex('user'), u))
   .then(function (ids) {
-    return ids[0];
+    return qGetUserById(ids[0]);
   }, function (err) {
     var match = err.message.match(/^ER_DUP_ENTRY.*for key '([^']+)'/);
     if (match) throw new Error(match[1] + ' already exists');
     else throw err;
   })
+  /*
   var unprop = 'username2id:' + u.username.toLowerCase();
   var eprop = 'email2id:' + u.email.toLowerCase();
   return qdb.mget([unprop, eprop])
@@ -37,6 +38,7 @@ exports.qAddUser = function (user) {
       });
     });
   })
+  */
 };
 
 var qGetUserByQueryObj = exports.qGetUserByQueryObj = function (queryObj) {
