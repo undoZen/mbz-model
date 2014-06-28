@@ -20,6 +20,9 @@ exports.qAddSite = function (site) {
   var c = _.extend({}, site);
   if (!c.domain) throw new Error('domain is required');
   return Q(knex('site').insert(site))
+  .then(function (ids) {
+    return _.extend({id: ids[0]}, site);
+  })
   var domains = c.customDomain ? [c.domain, c.customDomain] : [c.domain];
   var dprops = domains.map(function (d) {
     return 'domain2id:' + d;

@@ -1,6 +1,5 @@
 var assert = require('assert');
 var Q = require('q');
-var express = require('express');
 var supertest = require('supertest');
 
 var _ = require('lodash');
