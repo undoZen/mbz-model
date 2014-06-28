@@ -107,8 +107,12 @@ exports.qSaveDoc = function(doc) {
           return qdb.del(ids);
         })
         .then(function (deletedCache) {
-          debug('deletedCache: %s', deletedCache)
-          knex('doch').insert(oldDoc)
+          debug('deletedCache: %s', deletedCache);
+          debug('oldDoc save to doch: %j', oldDoc);
+          Q(knex('doch').insert(oldDoc))
+          .fail(function (err) {
+            console.error(err)
+          })
           return knex('doc').where(queryObj).update(doc);
         })
         .then(function (numRowsAffected) {
@@ -174,5 +178,5 @@ function qGetOneDoc(where) {
 
 exports.qGetDocs = qGetDocs;
 function qGetDocs(where) {
-  return Q(knex('doc').where(where).select());
+  return Q(knex('doc').where(where).orderBy('updatedAt', 'desc').select());
 }

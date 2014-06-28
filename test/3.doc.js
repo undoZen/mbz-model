@@ -1,113 +1,127 @@
 var assert = require('assert');
 var Q = require('q');
+var supertest = require('supertest');
 
 var docModel = require('../models/doc');
+var app = require('../');
+var ef = require('ef');
 
 describe('user model', function () {
+  var gefn = function(done) {
+    return ef.bind(null, 2, function (err, res) {
+      console.error(err);
+      console.error(res.text);
+      done(err);
+    });
+  }
 
   it('can save doc and return saved doc', function (done) {
-    docModel.qSaveDoc({
+    var efn = gefn(done);
+    supertest(app)
+    .post('/site/1/doc')
+    .type('json')
+    .send({
       userId: 1,
-      siteId: 1,
       slug: '/hello',
       content: 'world',
       published: true
     })
-    .then(function (doc) {
-      assert.equal(doc.docId, 1);
-      return docModel.qSaveDoc({
+    .expect(201, efn(function (res) {
+      assert.equal(res.body.docId, 1);
+      supertest(app)
+      .post('/site/1/doc')
+      .type('json')
+      .send({
         userId: 1,
-        siteId: 1,
         slug: '/undoZen',
         content: '#Introduce @undoZen\nhello~',
         published: true
       })
-    })
-    .then(function (doc) {
-      assert.equal(doc.docId, 2);
-      assert.equal(doc.slug, '/undozen');
-      done();
-    })
-    .done();
-  });
-
-  it('can get docs by siteId and docId', function (done) {
-    docModel.qGetDocs({
-      siteId: 1,
-      docId: 1
-    })
-    .then(function (docs) {
-      assert.equal(docs[0].docId, 1);
-      assert.equal(docs[0].slug, '/hello');
-      done();
-    }).done();
+      .expect(201, efn(function (res) {
+        assert.equal(res.body.docId, 2);
+        assert.equal(res.body.slug, '/undozen');
+        done();
+      }));
+    }));
   });
 
   it('can get one by siteId and docId', function (done) {
-    Q.all(docModel.qGetDocs({
-      siteId: 1,
-      docId: 1
-    }), docModel.qGetOneDoc({
-      siteId: 1,
-      docId: 1
-    }))
-    .spread(function (docs, doc) {
-      assert.deepEqual(docs[0], doc);
+    var efn = gefn(done);
+    supertest(app)
+    .get('/site/1/doc/1')
+    .expect(200, efn(function (res) {
+      assert.equal(res.body.docId, 1);
+      assert.equal(res.body.slug, '/hello');
       done();
-    }).done();
+    }));
+  });
+
+  it('can put a doc by slug', function (done) {
+    var efn = gefn(done);
+    supertest(app)
+    .put('/site/1/doc/hello')
+    .type('json')
+    .send({
+      userId: 1,
+      content: 'yes',
+      published: true
+    })
+    .expect(201, efn(function (res) {
+      assert.equal(res.body.docId, 1);
+      assert.equal(res.body.content, 'yes');
+      done();
+    }));
   });
 
   it('can save new version of a doc if slug exists', function (done) {
-    docModel.qSaveDoc({
+    var efn = gefn(done);
+    supertest(app)
+    .post('/site/1/doc')
+    .type('json')
+    .send({
       userId: 1,
-      siteId: 1,
       slug: '/hello',
       content: '#Hello, World!\nI\'m [][undoZen] on [][mian bi zhe]. creator of [MianBiZhe.com][this site]',
       published: true
     })
-    .then(function (doc) {
-      assert.equal(doc.docId, 1);
-      return docModel.qGetDocs({
-        siteId: 1,
-        docId: 1
-      });
-    })
-    .then(function (docs) {
-      //assert.equal(docs.filter(function (doc) { return doc.history; }).length, 1);
-      //assert.equal(docs.filter(function (doc) { return !doc.history; }).length, 1);
-      assert.equal(docs.length, 1);
+    .expect(201, efn(function (res) {
+      assert.equal(res.body.docId, 1);
+      assert(res.body.content.match(/Hello/));
       done();
-    }).done();
+    }));
   });
 
   it('can get doc with auto-generated title and doclinks', function (done) {
-    docModel.qGetOneDoc({
-      siteId: 1,
-      slug: '/hello'
-    })
-    .then(function (doc) {
-      assert.equal(doc.title, 'Hello, World!');
+    var efn = gefn(done);
+    supertest(app)
+    .get('/site/1/doc/1')
+    .expect(200, efn(function (res) {
+      assert.equal(res.body.title, 'Hello, World!');
       done();
-    })
-    .done();
+    }));
   });
 
   it('change referee doc update referer doc.html', function (done) {
-    docModel.qSaveDoc({
+    var efn = gefn(done);
+    supertest(app)
+    .post('/site/1/doc')
+    .type('json')
+    .send({
       userId: 1,
       siteId: 1,
       slug: '/undoZen',
       content: '#Hi, I\'m @undoZen\nhello~',
       published: true
     })
-    .then(function (doc) {
-      assert(doc.docId > 1)
-      return docModel.qGetOneDoc({siteId: 1, docId: 1});
-    })
-    .then(function (doc1) {
-      done();
-    })
-    .done();
+    .expect(201, efn(function (res) {
+      assert.equal(res.body.docId, 2);
+      supertest(app)
+      .get('/site/1/doc/1')
+      .expect(200, efn(function (res) {
+        assert(res.body.html.match(/Hi, I'm/));
+        done();
+      }));
+    }));
   });
 
 });

@@ -7,6 +7,7 @@ module.exports = app;
 
 app.use('/user', require('./routes/user'));
 app.use('/site', require('./routes/site'));
+app.use('/doc', require('./routes/doc'));
 
 app.use(function (err, req, res, next) {
   res.statusCode = 400;

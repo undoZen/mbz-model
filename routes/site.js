@@ -1,4 +1,5 @@
 var Q = require('q');
+var _ = require('lodash');
 var express = require('express');
 var bodyParser = require('body-parser');
 
@@ -6,6 +7,7 @@ var app = new express.Router();
 module.exports = app;
 
 var siteModel = require('../models/site');
+var docModel = require('../models/doc');
 
 app.route('/')
 .post(
@@ -45,6 +47,36 @@ app.route('/:id')
 .get(
   function (req, res, next) {
     res.json(siteModel.qSiteById(req.params.id));
+  },
+  function (err, req, res, next) {
+    res.json({error_message: err.message});
+  })
+
+app.route('/:siteId/doc')
+.post(
+  bodyParser.json(),
+  bodyParser.urlencoded({extended: true}),
+  function (req, res, next) {
+    res.statusCode = 201;
+    res.json(docModel.qSaveDoc(_.extend({}, req.body, req.params)));
+  })
+
+app.route(/^\/(\d+)\/doc(\/.+)/)
+.put(
+  bodyParser.json(),
+  bodyParser.urlencoded({extended: true}),
+  function (req, res, next) {
+    res.statusCode = 201;
+    var doc = _.extend({}, req.body);
+    doc.siteId = parseInt(req.params[0], 10);
+    doc.slug = req.params[1];
+    res.json(docModel.qSaveDoc(doc));
+  })
+
+app.route('/:siteId/doc/:docId')
+.get(
+  function (req, res, next) {
+    res.json(docModel.qGetOneDoc(_.pick(req.params, 'siteId', 'docId')));
   },
   function (err, req, res, next) {
     res.json({error_message: err.message});
