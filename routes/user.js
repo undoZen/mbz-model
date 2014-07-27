@@ -11,7 +11,7 @@ var userModel = require('../models/user');
 app.route('/')
   .post(
     bodyParser.json(),
-    bodyParser.urlencoded(),
+    bodyParser.urlencoded({extended: true}),
     function (req, res, next) {
       res.statusCode = 201;
       var user = _.pick(req.body, 'username password salt email'.split(' '));
