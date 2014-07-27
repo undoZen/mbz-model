@@ -1,4 +1,5 @@
 var Q = require('q');
+var _ = require('lodash');
 var express = require('express');
 var bodyParser = require('body-parser');
 
@@ -13,7 +14,8 @@ app.route('/')
     bodyParser.urlencoded(),
     function (req, res, next) {
       res.statusCode = 201;
-      res.json(userModel.qAddUser(req.body));
+      var user = _.pick(req.body, 'username password salt email'.split(' '));
+      res.json(userModel.qAddUser(user));
     })
   .get(
     function (req, res, next) {
