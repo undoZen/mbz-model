@@ -12,6 +12,7 @@ describe('user model', function () {
   var userObj = {
     username: 'undozen',
     password: '123123123',
+    salt: '123',
     email: 'undozen@gmail.com'
   };
 
