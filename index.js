@@ -14,4 +14,4 @@ app.use(function (err, req, res, next) {
   res.json({error_message: err.message});
 });
 
-if (require.main === module) app.listen(3000);
+if (require.main === module) app.listen(process.env.PORT || 3000);
