@@ -4,7 +4,7 @@ var _ = require('lodash');
 var knex = require('../lib/db/knex');
 var qdb = require('../lib/db/qdb');
 var cache = require('../lib/cache');
-var crypt = require('../utils').crypt;
+var crypt = require('../lib/crypt');
 
 exports.qAddUser = function (user) {
   var u = _.extend({}, user);

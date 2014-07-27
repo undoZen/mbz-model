@@ -4,13 +4,14 @@ var supertest = require('supertest');
 
 var _ = require('lodash');
 
-var crypt = require('../utils').crypt;
+var crypt = require('../lib/crypt');
 var app = require('../');
 
 describe('user model', function () {
 
   var userObj = {
     username: 'undozen',
+    salt: '123123123',
     password: '123123123',
     email: 'undozen@gmail.com'
   };

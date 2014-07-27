@@ -4,15 +4,16 @@ var supertest = require('supertest');
 
 var docModel = require('../models/doc');
 var app = require('../');
-var ef = require('ef');
+var ef = require('errto');
+var arity = require('fn-arity');
 
 describe('user model', function () {
   var gefn = function(done) {
-    return ef.bind(null, 2, function (err, res) {
+    return arity(2, ef.bind(null, function (err, res) {
       console.error(err);
       console.error(res.text);
       done(err);
-    });
+    }));
   }
 
   it('can save doc and return saved doc', function (done) {

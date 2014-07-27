@@ -1,6 +1,7 @@
 var Q = require('q');
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('lodash');
 
 var app = new express.Router();
 module.exports = app;
@@ -10,10 +11,11 @@ var userModel = require('../models/user');
 app.route('/')
   .post(
     bodyParser.json(),
-    bodyParser.urlencoded(),
+    bodyParser.urlencoded({extended: true}),
     function (req, res, next) {
       res.statusCode = 201;
-      res.json(userModel.qAddUser(req.body));
+      var user = _.pick(req.body, 'username salt password email'.split(' '));
+      res.json(userModel.qAddUser(user));
     })
   .get(
     function (req, res, next) {

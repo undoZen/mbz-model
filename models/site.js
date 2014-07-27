@@ -4,7 +4,7 @@ var _ = require('lodash');
 var knex = require('../lib/db/knex');
 var qdb = require('../lib/db/qdb');
 var ldb = require('../lib/db/ldb');
-var crypt = require('../utils').crypt;
+var crypt = require('../lib/crypt');
 
 function mapJsonParse(s) {
   return JSON.parse(s);
