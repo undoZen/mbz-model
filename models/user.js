@@ -1,20 +1,18 @@
 var Q = require('q');
+var _ = require('lodash');
 
-var qdb = require('./qdb');
-var crypt = require('../utils').crypt;
+var qdb = require('../lib/db/qdb');
+var crypt = require('../lib/crypt');
 
 exports.qAddUser = function (user) {
-  var u = {};
-  Object.keys(user).forEach(function (k) {
-    u[k] = user[k];
-  });
+  var u = _.extend({}, user);
   u.password = crypt.ghash(u.password);
   var unprop = 'username2id:' + u.username.toLowerCase();
   var eprop = 'email2id:' + u.email.toLowerCase();
   return qdb.mget([unprop, eprop])
   .spread(function (idByUsername, idByEmail) {
-    if (idByUsername) throw new Error('username exists');
-    if (idByEmail) throw new Error('email exists');
+    if (idByUsername) throw new Error('username already exists');
+    if (idByEmail) throw new Error('email already exists');
     return qdb.incr('global:userCount')
     .then(function (id) {
       u.id = id;
@@ -23,10 +21,10 @@ exports.qAddUser = function (user) {
         eprop, id,
         'user:' + id, JSON.stringify(u)
       )
-      .then(function () {
-        return id;
-      });
-    });
+    })
+    .then(function () {
+      return u;
+    })
   })
 };
 

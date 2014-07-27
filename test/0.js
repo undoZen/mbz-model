@@ -1,6 +1,11 @@
 var assert = require('assert');
+var db = require('../lib/db/redis');
 describe('start', function () {
-  it('ensure a tdd approach', function (done) {
+  before(function (done) {
+    db.flushall(done);
+  });
+
+  it('reset database', function (done) {
     process.nextTick(function () {
       assert(true);
       done();
