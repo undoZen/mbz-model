@@ -4,7 +4,7 @@
   "description": "source of mianbizhe.com",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test mocha -w"
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha -w"
   },
   "author": "undoZen <opensouce@undozen.com>",
   "license": "MIT",
@@ -25,6 +25,7 @@
     "redis": "^0.10.3"
   },
   "devDependencies": {
+    "mocha": "^1.21.1",
     "supertest": "^0.13.0"
   }
 }
