@@ -1,73 +1,137 @@
 var assert = require('assert');
+var supertest = require('supertest');
+
 var Q = require('q');
 var _ = require('lodash');
 
-var spawn = require('child_process').spawn;
-
-var crypt = require('../lib/crypt');
-var siteModel = require('../models/site');
+var app = require('../');
 
 describe('site model', function () {
 
   it('can add site', function (done) {
-    siteModel.qAddSite({
+    var siteObj = {
       name: '面壁計劃',
       domain: 'www.mian.bz',
       customDomain: 'www.mianbizhe.com',
       ownerId: 1
-    })
-    .then(function (id) {
-      assert.equal(id, 1);
-      done();
-    }).done();
+    };
+    supertest(app)
+      .post('/site')
+      .type('json')
+      .send(siteObj)
+      .expect(201, function (err, res) {
+        assert.ok(!err);
+        assert.equal(res.body.id, 1);
+        assert.equal(res.body.name, siteObj.name);
+        done();
+      });
   });
 
   it('can add more sites', function (done) {
-    Q.all([siteModel.qAddSite({
+    supertest(app)
+    .post('/site')
+    .type('json')
+    .send({
       name: '無用之用',
       domain: 'wyzy.mian.bz',
       ownerId: 1
-    }),
-    siteModel.qAddSite({
-      name: '氣質大自然',
-      domain: 'qznature.mianbz.com',
-      customDomain: 'www.qznature.com',
-      ownerId: 2
-    })])
-    .spread(function (id2, id3) {
-      assert.equal(id2, 2);
-      assert.equal(id3, 3);
-      done();
-    }).done();
+    })
+    .expect(201, function (err, res) {
+      assert.ok(!err);
+      assert.equal(res.body.id, 2);
+      supertest(app)
+      .post('/site')
+      .type('json')
+      .send({
+        name: '氣質大自然',
+        domain: 'qznature.mianbz.com',
+        customDomain: 'www.qznature.com',
+        ownerId: 2
+      })
+      .expect(201, function (err, res) {
+        assert.ok(!err);
+        assert.equal(res.body.id, 3);
+        done();
+      });
+    });
   });
 
   it('can list all sites', function (done) {
-    siteModel.qAllSites()
-    .then(function (sites) {
-      assert.equal(sites.length, 3);
+    supertest(app)
+    .get('/site')
+    .expect(200, function (err, res) {
+      assert(!err);
+      assert.equal(res.body.length, 3);
       done();
-    }).done();
+    });
   });
 
   it('can list sites by user id', function (done) {
-    siteModel.qSitesByUserId(1)
-    .then(function (sites) {
-      assert.equal(sites.length, 2);
-      siteModel.qSitesByUserId(2)
-      .then(function (sites) {
-        assert.equal(sites.length, 1);
+    supertest(app)
+    .get('/site?userId=1')
+    .expect(200, function (err, res) {
+      assert(!err);
+      assert.equal(res.body.length, 2);
+      supertest(app)
+      .get('/site?userId=2')
+      .expect(200, function (err, res) {
+        assert(!err);
+        assert.equal(res.body.length, 1);
         done();
-      }).done();
-    }).done();
+      });
+    });
   });
 
   it('can get site by domain', function (done) {
-    Q.all([siteModel.qSiteByDomain('qznature.mianbz.com'), siteModel.qSiteByDomain('www.qznature.com')])
-    .spread(function (site1, site2) {
+    supertest(app)
+    .get('/site?domain=www.qznature.com')
+    .expect(200, function (err, res) {
+      assert(!err);
+      var site1 = res.body;
+      supertest(app)
+      .get('/site?domain=qznature.mianbz.com')
+      .expect(200, function (err, res) {
+        assert(!err);
+        var site2 = res.body;
+        assert.equal(site1.id, site2.id);
+        assert.equal(site1.ownerId, 2);
+        done();
+      });
+    });
+  });
+
+  it('can get sites by domain arrays', function (done) {
+    supertest(app)
+    .get('/site?domain=www.qznature.com&domain=qznature.mianbz.com')
+    .expect(200, function (err, res) {
+      if (err) { console.error(err.stack); console.error(res.text) };
+      assert(!err);
+      assert.equal(res.body.length, 2);
+      var site1 = res.body[0];
+      var site2 = res.body[1];
       assert.equal(site1.id, site2.id);
       assert.equal(site1.ownerId, 2);
       done();
-    }).done();
+    });
+  });
+
+  it('can get site by id', function (done) {
+    supertest(app)
+    .get('/site/3')
+    .expect(200, function (err, res) {
+      if (err) { console.error(err.stack); console.error(res.text) };
+      assert(!err);
+      var site1 = res.body;
+      supertest(app)
+      .get('/site?domain=qznature.mianbz.com')
+      .expect(200, function (err, res) {
+        assert(!err);
+        var site2 = res.body;
+        assert.equal(site1.id, site2.id);
+        assert.equal(site1.ownerId, 2);
+        done();
+      });
+    });
   });
 
 });
