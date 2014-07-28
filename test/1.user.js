@@ -11,7 +11,7 @@ describe('user model', function () {
 
   var userObj = {
     username: 'undozen',
-    salt: '123123123',
+    salt: '123',
     password: '123123123',
     email: 'undozen@gmail.com'
   };
@@ -28,6 +28,16 @@ describe('user model', function () {
         assert.equal(res.body.username, userObj.username);
         assert.equal(res.body.email, userObj.email);
         assert.notEqual(res.body.password, userObj.password);
+        done();
+      });
+  });
+
+  it('can get salt of password for one user', function (done) {
+    supertest(app)
+      .get('/user/1/salt')
+      .expect(200, function (err, res) {
+        assert.ok(!err);
+        assert.equal(userObj.salt, res.body.salt);
         done();
       });
   });

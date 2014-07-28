@@ -34,3 +34,12 @@ app.route('/:id')
     function (err, req, res, next) {
       res.json({error_message: err.message});
     })
+
+app.route('/:id/salt')
+  .get(
+    function (req, res, next) {
+      res.json({salt: userModel.qGetUserById(req.params.id).get('salt')});
+    },
+    function (err, req, res, next) {
+      res.json({error_message: err.message});
+    })
