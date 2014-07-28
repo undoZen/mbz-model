@@ -32,9 +32,19 @@ describe('user model', function () {
       });
   });
 
-  it('can get salt of password for one user', function (done) {
+  it('can get salt of password for one user by userId', function (done) {
     supertest(app)
       .get('/user/1/salt')
+      .expect(200, function (err, res) {
+        assert.ok(!err);
+        assert.equal(userObj.salt, res.body.salt);
+        done();
+      });
+  });
+
+  it('can get salt of password for one user by username', function (done) {
+    supertest(app)
+      .get('/user/undozen/salt')
       .expect(200, function (err, res) {
         assert.ok(!err);
         assert.equal(userObj.salt, res.body.salt);

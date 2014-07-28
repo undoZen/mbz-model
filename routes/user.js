@@ -35,10 +35,14 @@ app.route('/:id')
       res.json({error_message: err.message});
     })
 
-app.route('/:id/salt')
+app.route('/:id_or_username/salt')
   .get(
     function (req, res, next) {
-      res.json({salt: userModel.qGetUserById(req.params.id).get('salt')});
+      if (req.params.id_or_username.match(/^\d+$/)) {
+        res.json({salt: userModel.qGetUserById(req.params.id_or_username).get('salt')});
+      } else {
+        res.json({salt: userModel.qGetUserByUsername(req.params.id_or_username).get('salt')});
+      }
     },
     function (err, req, res, next) {
       res.json({error_message: err.message});
