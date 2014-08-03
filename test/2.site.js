@@ -82,6 +82,18 @@ describe('site model', function () {
     });
   });
 
+  it('return 404 and null if not found', function (done) {
+    supertest(app)
+    .get('/site?domain=notexists.com')
+    .expect(404, function (err, res) {
+      assert(!err);
+      console.log(res.text);
+      console.log(res.body);
+      assert.strictEqual('null', res.text);
+      done();
+    });
+  });
+
   it('can get site by domain', function (done) {
     supertest(app)
     .get('/site?domain=www.qznature.com')

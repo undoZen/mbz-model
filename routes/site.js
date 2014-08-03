@@ -34,12 +34,22 @@ app.route('/')
         .fail(next)
         .done();
       } else {
-        res.json(siteModel.qSiteByDomain(req.query.domain));
+        resjson(siteModel.qSiteByDomain(req.query.domain));
       }
     } else if (req.query.userId) {
       res.json(siteModel.qSitesByUserId(req.query.userId));
     } else {
       res.json(siteModel.qAllSites());
+    }
+    function resjson(pSite) {
+      pSite.then(function (site) {
+        if (!site) {
+          res.json(null);
+          res.statusCode = 404;
+        } else {
+          res.json(site);
+        }
+      })
     }
   })
 
