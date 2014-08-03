@@ -125,4 +125,8 @@ describe('user model', function () {
     }));
   });
 
+  it('will fail', function () {
+    assert(false);
+  });
+
 });
