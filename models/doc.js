@@ -5,6 +5,7 @@ var fs = require('fs');
 var Q = require('q');
 var marked = require('marked');
 var debug = require('debug')('model:doc');
+var _ = require('lodash');
 
 var knex = require('../lib/db/knex');
 var qdb = require('../lib/db/qdb');
@@ -23,22 +24,33 @@ function normalizeSlug(slug) {
 }
 
 function qSaveDocLinks(doc) {
-  return Q(knex('doclink').where({fromSiteId: doc.siteId, fromSlug: doc.slug}).del())
+  var fromDocId = doc.docId;
+  return Q(knex('doclink').where({fromDocId: fromDocId}).del())
   .then(function (numRowsAffected) {
-    var qs = [];
+    var queries = [];
     doc.content.replace(reflink, function (all, title, slug) {
-      debug('%j', arguments);
       if (slug) {
         slug = normalizeSlug(slug);
-        qs.push({
-          fromSiteId: doc.siteId,
-          fromSlug: doc.slug,
-          toSiteId: doc.siteId,
-          toSlug: slug
+        debug('%s', slug);
+        queries.push({
+          siteId: doc.siteId,
+          slug: slug
         });
       }
     });
-    return Q.all(qs.length ? knex('doclink').insert(qs) : [])
+    return Q.all(queries.length ? queries.map(function (query) {
+      return knex('doc').where(query).select();
+    }) : [])
+    .then(function (results) {
+      results = _.flatten(results);
+      debug('doclinks: %j', results);
+      if (!results.length) return [];
+      var doclinks = results.map(function (doc) {
+        return {fromDocId: fromDocId, toDocId: doc.docId};
+      });
+      debug('doclinks: %j', doclinks);
+      return knex('doclink').insert(doclinks);
+    })
     .then(function () {
       return doc;
     })
@@ -58,13 +70,11 @@ function docLinks(f_t, qDoc) {
   .then(function (doc) {
     var op = {to: 'from', from: 'to'};
     var where = {};
-    where[op[f_t]+'SiteId'] = doc.siteId;
-    where[op[f_t]+'Slug'] = doc.slug;
+    where[op[f_t]+'DocId'] = doc.docId;
     var query = knex('doclink')
       .column('doc.siteId', 'doc.docId', 'doc.slug', 'doc.title')
       .join('doc', function () {
-        this.on('doclink.'+f_t+'SiteId', '=', 'doc.siteId');
-        this.on('doclink.'+f_t+'Slug', '=', 'doc.slug');
+        this.on('doclink.'+f_t+'DocId', '=', 'doc.docId');
       }, 'left')
       .where(where);
     debug('docLinks'+f_t.toUpperCase()+' query: %s', query);
@@ -123,11 +133,15 @@ exports.qSaveDoc = function(doc) {
       } else {
         return knex('doc').insert(doc)
         .then(function (docId) {
-          doc.docId = docId;
+          doc.docId = Array.isArray(docId) ? docId[0] : docId;
           return doc;
         })
       }
     })
+  })
+  .then(function (doc) {
+    debug('%j', doc);
+    return doc;
   })
   .then(qSaveDocLinks)
 };
