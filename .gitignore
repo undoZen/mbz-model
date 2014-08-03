@@ -1,0 +1,7 @@
+/test/result.xml
+/tmp
+logs
+*.log
+dump.rdb
+
+node_modules
