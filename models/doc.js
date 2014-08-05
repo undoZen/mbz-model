@@ -4,7 +4,7 @@ var fs = require('fs');
 
 var Q = require('q');
 var marked = require('marked');
-var debug = require('debug')('model:doc');
+var debug = require('debug')('mm:model:doc');
 var _ = require('lodash');
 
 var knex = require('../lib/db/knex');

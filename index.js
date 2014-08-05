@@ -1,5 +1,13 @@
 var express = require('express');
 
+var log4js = require('log4js');
+var logDir = path.resolve(process.env.HOME, 'logs');
+require('mkdirp').sync(logDir);
+log4js.loadAppender('file');
+'mm:cache mm:model:doc'.split(' ').forEach(function (namespace) {
+  log4js.addAppender(log4js.appenders.file(path.join(logDir, 'mbz-model.log')), namespace);
+});
+
 var app = express();
 require('q-locals')(app);
 
