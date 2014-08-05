@@ -1,5 +1,6 @@
-var express = require('express');
+var path = require('path');
 
+var express = require('express');
 var log4js = require('log4js');
 var logDir = path.resolve(process.env.HOME, 'logs');
 require('mkdirp').sync(logDir);
