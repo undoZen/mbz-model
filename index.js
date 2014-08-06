@@ -6,7 +6,7 @@ var logDir = path.resolve(process.env.HOME, 'logs');
 require('mkdirp').sync(logDir);
 log4js.loadAppender('file');
 'mm:cache mm:model:doc'.split(' ').forEach(function (namespace) {
-  log4js.addAppender(log4js.appenders.file(path.join(logDir, 'mbz-model-'+namespace.replace(/:/g, '-')+'.log')), namespace);
+  log4js.addAppender(log4js.appenders.file(path.join(logDir, 'mbz-model.log')), namespace);
 });
 
 var app = express();
