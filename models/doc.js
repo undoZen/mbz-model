@@ -78,7 +78,13 @@ function docLinks(f_t, qDoc) {
       }, 'left')
       .where(where);
     debug('docLinks'+f_t.toUpperCase()+' query: %s', query);
-    return query.select();
+    return query.select()
+    .then(function (docs) {
+      docs.forEach(function (doc) {
+        doc.published = true;
+      });
+      return docs;
+    })
   })
 }
 var docLinksTo = docLinks.bind(null, 'to');
@@ -106,7 +112,13 @@ exports.qSaveDoc = function(doc) {
     return qGetOneDoc(queryObj)
     .then(function (oldDoc) {
       debug('oldDoc: %j', oldDoc);
-      if (oldDoc) {
+      doc.revision = oldDoc ? oldDoc.revision : 1;
+      if (oldDoc && oldDoc.published) {
+        //如果最新文章是草稿，那麼 revision 應該相同
+        //就是說一個 revision 是從有草稿保存到 published 爲止
+        doc.revision += 1;
+      }
+      if (oldDoc && doc.published) {
         debug('%j', oldDoc);
         if ('html' in oldDoc) delete oldDoc.html;
         return Q([sumkey(oldDoc), docLinksFrom(oldDoc)])
@@ -131,10 +143,28 @@ exports.qSaveDoc = function(doc) {
           return doc;
         })
       } else {
-        return knex('doc').insert(doc)
+        //草稿只進 doch 表
+        if (oldDoc) {
+          doc.docId = oldDoc.docId;
+        }
+        debug('saving doc: %j', doc)
+        debug('oldDoc before saving new doc: %j', oldDoc)
+        return knex(doc.published ? 'doc' : 'doch').insert(doc)
         .then(function (docId) {
-          doc.docId = Array.isArray(docId) ? docId[0] : docId;
-          return doc;
+          if (!doc.docId) {
+            doc.docId = Array.isArray(docId)
+              ? docId[0]
+              : docId;
+          }
+          if (doc.published) {
+            return qGetOneDoc({docId: doc.docId})
+          } else {
+            return qdb.del(sumkey(doc))
+            .then(function (deletedCache) {
+              debug('deletedCache: %s', deletedCache);
+              return qGetOneDocH({docId: doc.docId});
+            })
+          }
         })
       }
     })
@@ -174,7 +204,7 @@ var decDocLinks = function (qDoc) {
 }
 function sumkey(doc) {
     debug('sumkey doc: %j', doc);
-    var result = 'cache:' + doc.siteId + ':' + doc.docId;
+    var result = 'cache:' + doc.siteId + ':' + doc.docId + ':' + (doc.published ? 'p' : 'd');
     debug('sumkey result: %s', result);
     return result;
 }
@@ -193,4 +223,19 @@ function qGetOneDoc(where) {
 exports.qGetDocs = qGetDocs;
 function qGetDocs(where) {
   return Q(knex('doc').where(where).orderBy('updatedAt', 'desc').select());
+}
+
+exports.qGetOneDocH = qGetOneDocH;
+function qGetOneDocH(where) {
+  debug('qGetOneDocH where: %j', where);
+  return qGetDocsH(where).get(0)
+  .then(function (doc) {
+    debug('qGetOneDocH before decDocLinks: %j', doc);
+    return decDocLinks(doc);
+  })
+};
+
+exports.qGetDocsH = qGetDocsH;
+function qGetDocsH(where) {
+  return Q(knex('doch').where(where).orderBy('id', 'desc').select());
 }

@@ -6,7 +6,7 @@ var _ = require('lodash');
 
 var app = require('../');
 
-describe('site model', function () {
+describe('site model: ', function () {
 
   it('can add site', function (done) {
     var siteObj = {
@@ -87,8 +87,6 @@ describe('site model', function () {
     .get('/site?domain=notexists.com')
     .expect(404, function (err, res) {
       assert(!err);
-      console.error(res.text);
-      console.error(res.body);
       assert.strictEqual('null', res.text);
       done();
     });

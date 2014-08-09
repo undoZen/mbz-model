@@ -41,6 +41,7 @@ app.route('/')
     }
   })
 
+/*
 app.route('/:id')
 .get(
   function (req, res, next) {
@@ -49,3 +50,4 @@ app.route('/:id')
   function (err, req, res, next) {
     res.json({error_message: err.message});
   })
+*/

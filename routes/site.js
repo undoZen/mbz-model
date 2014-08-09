@@ -86,7 +86,10 @@ app.route(/^\/(\d+)\/doc(\/.+)/)
 app.route('/:siteId/doc/:docId')
 .get(
   function (req, res, next) {
-    res.json(docModel.qGetOneDoc(_.pick(req.params, 'siteId', 'docId')));
+    var queryObj = _.pick(req.params, 'siteId', 'docId');
+    queryObj.published = req.query.published !== 'false';
+    console.log(queryObj.published);
+    res.json(docModel.qGetOneDoc(queryObj));
   },
   function (err, req, res, next) {
     res.json({error_message: err.message});
