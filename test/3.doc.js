@@ -10,8 +10,6 @@ var arity = require('fn-arity');
 describe('doc model: ', function () {
   var gefn = function(done) {
     return arity(2, ef.bind(null, function (err, res) {
-      console.error(err);
-      console.error(res.text);
       done(err);
     }));
   }
@@ -70,7 +68,6 @@ describe('doc model: ', function () {
       published: true
     })
     .expect(201, efn(function (res) {
-      console.error(res.body);
       assert.equal(res.body.docId, 1);
       assert.equal(res.body.content, 'yes');
       assert.equal(res.body.revision, 2);
@@ -89,7 +86,6 @@ describe('doc model: ', function () {
       published: false
     })
     .expect(201, efn(function (res) {
-      console.error(res.body);
       assert.equal(1, res.body.docId);
       assert.equal(3, res.body.revision);
       assert.equal('v3d1', res.body.content);
@@ -173,7 +169,6 @@ describe('doc model: ', function () {
       supertest(app)
       .get('/site/1/doc/1')
       .expect(200, efn(function (res) {
-        console.error(res.body);
         assert(res.body.html.match(/Hi, I'm/));
         done();
       }));
