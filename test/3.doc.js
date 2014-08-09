@@ -7,7 +7,7 @@ var app = require('../');
 var ef = require('errto');
 var arity = require('fn-arity');
 
-describe('user model', function () {
+describe('doc model: ', function () {
   var gefn = function(done) {
     return arity(2, ef.bind(null, function (err, res) {
       console.error(err);
@@ -41,6 +41,7 @@ describe('user model', function () {
       .expect(201, efn(function (res) {
         assert.equal(res.body.docId, 2);
         assert.equal(res.body.slug, '/undozen');
+        assert.equal(res.body.revision, 1);
         done();
       }));
     }));
@@ -53,6 +54,7 @@ describe('user model', function () {
     .expect(200, efn(function (res) {
       assert.equal(res.body.docId, 1);
       assert.equal(res.body.slug, '/hello');
+        assert.equal(res.body.revision, 1);
       done();
     }));
   });
@@ -68,8 +70,58 @@ describe('user model', function () {
       published: true
     })
     .expect(201, efn(function (res) {
+      console.error(res.body);
       assert.equal(res.body.docId, 1);
       assert.equal(res.body.content, 'yes');
+      assert.equal(res.body.revision, 2);
+      done();
+    }));
+  });
+
+  it('can save multiple drafts under the same new revision v3d1', function (done) {
+    var efn = gefn(done);
+    supertest(app)
+    .put('/site/1/doc/hello')
+    .type('json')
+    .send({
+      userId: 1,
+      content: 'v3d1',
+      published: false
+    })
+    .expect(201, efn(function (res) {
+      console.error(res.body);
+      assert.equal(1, res.body.docId);
+      assert.equal(3, res.body.revision);
+      assert.equal('v3d1', res.body.content);
+      done();
+    }));
+  });
+
+  it('can save multiple drafts under the same new revision v3d2', function (done) {
+    var efn = gefn(done);
+    supertest(app)
+    .put('/site/1/doc/hello')
+    .type('json')
+    .send({
+      userId: 1,
+      content: 'v3d2',
+      published: false
+    })
+    .expect(201, efn(function (res) {
+      assert.equal(1, res.body.docId);
+      assert.equal(3, res.body.revision);
+      assert.equal('v3d2', res.body.content);
+      done();
+    }));
+  });
+
+  it('will get published doc by default', function (done) {
+    var efn = gefn(done);
+    supertest(app)
+    .get('/site/1/doc/1')
+    .expect(200, efn(function (res) {
+      assert.equal(2, res.body.revision);
+      assert.equal('yes', res.body.content);
       done();
     }));
   });
@@ -87,6 +139,7 @@ describe('user model', function () {
     })
     .expect(201, efn(function (res) {
       assert.equal(res.body.docId, 1);
+      assert.equal(res.body.revision, 3);
       assert(res.body.content.match(/Hello/));
       done();
     }));
@@ -97,6 +150,7 @@ describe('user model', function () {
     supertest(app)
     .get('/site/1/doc/1')
     .expect(200, efn(function (res) {
+      assert.equal(3, res.body.revision);
       assert.equal(res.body.title, 'Hello, World!');
       done();
     }));
@@ -119,6 +173,7 @@ describe('user model', function () {
       supertest(app)
       .get('/site/1/doc/1')
       .expect(200, efn(function (res) {
+        console.error(res.body);
         assert(res.body.html.match(/Hi, I'm/));
         done();
       }));

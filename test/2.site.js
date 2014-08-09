@@ -6,7 +6,7 @@ var _ = require('lodash');
 
 var app = require('../');
 
-describe('site model', function () {
+describe('site model: ', function () {
 
   it('can add site', function (done) {
     var siteObj = {

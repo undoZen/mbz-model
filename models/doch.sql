@@ -6,6 +6,7 @@ create table if not exists doch (
   slug text not null,
   title text,
   content mediumtext,
+  revision boolean not null default 0,
   autoSaved boolean not null default 0,
   published boolean not null default 0,
   createdAt timestamp not null default current_timestamp,
