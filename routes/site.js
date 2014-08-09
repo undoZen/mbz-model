@@ -8,6 +8,7 @@ module.exports = app;
 
 var siteModel = require('../models/site');
 var docModel = require('../models/doc');
+var debug = require('debug')('mm:route:site');
 
 app.route('/')
 .post(
@@ -15,7 +16,17 @@ app.route('/')
   bodyParser.urlencoded({extended: true}),
   function (req, res, next) {
     res.statusCode = 201;
-    res.json(siteModel.qAddSite(req.body));
+    debug('site post req.body: %j', req.body);
+    siteModel.qAddSite(req.body)
+    .then(function (json) {
+      debug('site post res.json: %j', json);
+      res.json(json);
+    })
+    .fail(function (err) {
+      debug('site post err: %s', err.stack);
+      throw err;
+    })
+    .done();
   })
 .get(
   function (req, res, next) {
@@ -50,6 +61,11 @@ app.route('/')
           res.json(site);
         }
       })
+      .fail(function (err) {
+        debug('site get err: %s', err.stack);
+        throw err;
+      })
+      .done()
     }
   })
 

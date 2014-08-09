@@ -5,6 +5,7 @@ var knex = require('../lib/db/knex');
 var qdb = require('../lib/db/qdb');
 var ldb = require('../lib/db/ldb');
 var crypt = require('../lib/crypt');
+var debug = require('debug')('mm:model:site');
 
 function mapJsonParse(s) {
   return JSON.parse(s);
@@ -15,18 +16,41 @@ function fPrependString(str) {
     return str + s;
   }
 }
+function fixedReturn(value) {
+  return function () {
+    return value;
+  };
+}
 
 exports.qAddSite = function (site) {
   var c = _.extend({}, site);
   if (!c.domain) throw new Error('domain is required');
-  return Q(knex('site').insert(site))
+  var customDomain;
+  if (c.customDomain) {
+    customDomain = c.customDomain;
+    delete c.customDomain;
+  }
+  debug('add site: %j', c)
+  return Q(knex('site').insert(c))
   .then(function (ids) {
-    return _.extend({id: ids[0]}, site);
+    return ids[0];
+  })
+  .then(function (id) {
+    if (!customDomain) return id;
+    return Q(knex('cname').insert({
+      domain: customDomain,
+      siteId: id
+    }))
+    .then(fixedReturn(id));
+  })
+  .then(function (id) {
+    return qSiteById(id);
   })
   var domains = c.customDomain ? [c.domain, c.customDomain] : [c.domain];
   var dprops = domains.map(function (d) {
     return 'domain2id:' + d;
   });
+  /* 當時用 redis 實現時候的代碼
   return qdb.mget(dprops)
   .then(function (idsByDomain) {
     for (var i in idsByDomain) {
@@ -46,6 +70,7 @@ exports.qAddSite = function (site) {
       return id;
     });
   });
+  */
 };
 
 exports.qSiteById = qSiteById;
@@ -60,8 +85,18 @@ exports.qSiteByDomain = qSiteByDomain;
 function qSiteByDomain(pDomain) {
   return Q(pDomain)
   .then(function (domain) {
-    return Q(knex('site').where({domain: domain}).orWhere({customDomain: domain}).select()).get(0);
-    return qdb.get(fPrependString('domain2id:')(domain));
+    debug('domain: %s', domain)
+    if (domain.match(/\.mian\.bz$/i)) {
+      return Q(knex('site').where({domain: domain}).limit(1).select()).get(0);
+    } else {
+      return Q(knex('cname').where({domain: domain}).limit(1).select()).get(0)
+      .then(function (cname) {
+        debug('cname: %j', cname)
+        if (!cname) return null;
+        return Q(knex('site').where({id: cname.siteId}).limit(1).select()).get(0);
+      })
+    }
+    //return qdb.get(fPrependString('domain2id:')(domain));
   })
   //.then(qSiteById)
 }
