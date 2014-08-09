@@ -87,8 +87,6 @@ describe('site model: ', function () {
     .get('/site?domain=notexists.com')
     .expect(404, function (err, res) {
       assert(!err);
-      console.error(res.text);
-      console.error(res.body);
       assert.strictEqual('null', res.text);
       done();
     });
