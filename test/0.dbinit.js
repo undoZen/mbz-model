@@ -5,7 +5,7 @@ var sm = require('simple-migrate');
 var qdb = require('../lib/db/qdb');
 var _ = require('lodash');
 var config = require('config');
-_.migrate(config, require('../config/test.json')); //insure config not overwritten by local.json
+_.merge(config, require('../config/test.json')); //insure config not overwritten by local.json
 
 describe('start', function () {
   before(function (done) {
