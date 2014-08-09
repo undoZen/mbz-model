@@ -88,7 +88,6 @@ app.route('/:siteId/doc/:docId')
   function (req, res, next) {
     var queryObj = _.pick(req.params, 'siteId', 'docId');
     queryObj.published = req.query.published !== 'false';
-    console.log(queryObj.published);
     res.json(docModel.qGetOneDoc(queryObj));
   },
   function (err, req, res, next) {
