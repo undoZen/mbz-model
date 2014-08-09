@@ -204,7 +204,7 @@ var decDocLinks = function (qDoc) {
 }
 function sumkey(doc) {
     debug('sumkey doc: %j', doc);
-    var result = 'cache:' + doc.siteId + ':' + doc.docId + ':' + (doc.published ? 'p' : 'd');
+    var result = 'cache:doc:' + doc.siteId + ':' + doc.docId + ':' + (doc.published ? 'p' : 'd');
     debug('sumkey result: %s', result);
     return result;
 }

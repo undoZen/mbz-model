@@ -20,6 +20,7 @@ describe('site model: ', function () {
       .type('json')
       .send(siteObj)
       .expect(201, function (err, res) {
+        if (err) console.error(err.stack);
         assert.ok(!err);
         assert.equal(res.body.id, 1);
         assert.equal(res.body.name, siteObj.name);
@@ -44,7 +45,7 @@ describe('site model: ', function () {
       .type('json')
       .send({
         name: '氣質大自然',
-        domain: 'qznature.mianbz.com',
+        domain: 'qznature.mian.bz',
         customDomain: 'www.qznature.com',
         ownerId: 2
       })
@@ -99,7 +100,7 @@ describe('site model: ', function () {
       assert(!err);
       var site1 = res.body;
       supertest(app)
-      .get('/site?domain=qznature.mianbz.com')
+      .get('/site?domain=qznature.mian.bz')
       .expect(200, function (err, res) {
         assert(!err);
         var site2 = res.body;
@@ -112,7 +113,7 @@ describe('site model: ', function () {
 
   it('can get sites by domain arrays', function (done) {
     supertest(app)
-    .get('/site?domain=www.qznature.com&domain=qznature.mianbz.com')
+    .get('/site?domain=www.qznature.com&domain=qznature.mian.bz')
     .expect(200, function (err, res) {
       if (err) { console.error(err.stack); console.error(res.text) };
       assert(!err);
@@ -133,7 +134,7 @@ describe('site model: ', function () {
       assert(!err);
       var site1 = res.body;
       supertest(app)
-      .get('/site?domain=qznature.mianbz.com')
+      .get('/site?domain=qznature.mian.bz')
       .expect(200, function (err, res) {
         assert(!err);
         var site2 = res.body;
