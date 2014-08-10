@@ -2,6 +2,11 @@
   "name": "mianbz",
   "version": "0.0.1",
   "dependencies": {
+    "bluebird": {
+      "version": "2.2.2",
+      "from": "bluebird@",
+      "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-2.2.2.tgz"
+    },
     "body-parser": {
       "version": "1.6.2",
       "from": "body-parser@^1.4.3",
@@ -416,6 +421,62 @@
         }
       }
     },
+    "pg": {
+      "version": "3.4.0",
+      "from": "pg@",
+      "resolved": "https://registry.npmjs.org/pg/-/pg-3.4.0.tgz",
+      "dependencies": {
+        "generic-pool": {
+          "version": "2.0.3",
+          "from": "generic-pool@2.0.3",
+          "resolved": "https://registry.npmjs.org/generic-pool/-/generic-pool-2.0.3.tgz"
+        },
+        "buffer-writer": {
+          "version": "1.0.0",
+          "from": "buffer-writer@1.0.0",
+          "resolved": "https://registry.npmjs.org/buffer-writer/-/buffer-writer-1.0.0.tgz"
+        },
+        "pgpass": {
+          "version": "0.0.3",
+          "from": "pgpass@0.0.3",
+          "resolved": "https://registry.npmjs.org/pgpass/-/pgpass-0.0.3.tgz",
+          "dependencies": {
+            "split": {
+              "version": "0.3.0",
+              "from": "split@~0.3",
+              "resolved": "https://registry.npmjs.org/split/-/split-0.3.0.tgz",
+              "dependencies": {
+                "through": {
+                  "version": "2.3.4",
+                  "from": "through@2",
+                  "resolved": "https://registry.npmjs.org/through/-/through-2.3.4.tgz"
+                }
+              }
+            }
+          }
+        },
+        "nan": {
+          "version": "0.6.0",
+          "from": "nan@~0.6.0",
+          "resolved": "https://registry.npmjs.org/nan/-/nan-0.6.0.tgz"
+        },
+        "packet-reader": {
+          "version": "0.2.0",
+          "from": "packet-reader@0.2.0",
+          "resolved": "https://registry.npmjs.org/packet-reader/-/packet-reader-0.2.0.tgz"
+        },
+        "pg-connection-string": {
+          "version": "0.1.1",
+          "from": "pg-connection-string@0.1.1",
+          "resolved": "https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-0.1.1.tgz"
+        },
+        "pg-types": {
+          "version": "1.4.0",
+          "from": "pg-types@1.4.0",
+          "resolved": "https://registry.npmjs.org/pg-types/-/pg-types-1.4.0.tgz"
+        }
+      }
+    },
     "q": {
       "version": "1.0.1",
       "from": "q@^1.0.1",
@@ -430,6 +491,70 @@
       "version": "0.10.3",
       "from": "redis@^0.10.3",
       "resolved": "https://registry.npmjs.org/redis/-/redis-0.10.3.tgz"
+    },
+    "sequelize": {
+      "version": "2.0.0-dev12",
+      "from": "sequelize@unstable",
+      "resolved": "https://github.com/sequelize/sequelize/archive/master.tar.gz",
+      "dependencies": {
+        "dottie": {
+          "version": "0.2.4",
+          "from": "dottie@0.2.4",
+          "resolved": "https://registry.npmjs.org/dottie/-/dottie-0.2.4.tgz"
+        },
+        "generic-pool": {
+          "version": "2.1.1",
+          "from": "generic-pool@2.1.1",
+          "resolved": "https://registry.npmjs.org/generic-pool/-/generic-pool-2.1.1.tgz"
+        },
+        "inflection": {
+          "version": "1.3.8",
+          "from": "inflection@^1.3.8",
+          "resolved": "https://registry.npmjs.org/inflection/-/inflection-1.3.8.tgz"
+        },
+        "moment": {
+          "version": "2.7.0",
+          "from": "moment@~2.7.0",
+          "resolved": "https://registry.npmjs.org/moment/-/moment-2.7.0.tgz"
+        },
+        "node-uuid": {
+          "version": "1.4.1",
+          "from": "node-uuid@~1.4.1",
+          "resolved": "https://registry.npmjs.org/node-uuid/-/node-uuid-1.4.1.tgz"
+        },
+        "sequelize-bluebird": {
+          "version": "2.1.0",
+          "from": "sequelize-bluebird@git://github.com/sequelize/bluebird.git#9df139af53c5d346ffd38df30fc9dc60c62a9c98",
+          "resolved": "git://github.com/sequelize/bluebird.git#9df139af53c5d346ffd38df30fc9dc60c62a9c98"
+        },
+        "sql": {
+          "version": "0.39.0",
+          "from": "sql@~0.39.0",
+          "resolved": "https://registry.npmjs.org/sql/-/sql-0.39.0.tgz",
+          "dependencies": {
+            "sliced": {
+              "version": "0.0.5",
+              "from": "sliced@0.0.x",
+              "resolved": "https://registry.npmjs.org/sliced/-/sliced-0.0.5.tgz"
+            },
+            "lodash": {
+              "version": "1.3.1",
+              "from": "lodash@1.3.x",
+              "resolved": "https://registry.npmjs.org/lodash/-/lodash-1.3.1.tgz"
+            }
+          }
+        },
+        "toposort-class": {
+          "version": "0.3.1",
+          "from": "toposort-class@~0.3.0",
+          "resolved": "https://registry.npmjs.org/toposort-class/-/toposort-class-0.3.1.tgz"
+        },
+        "validator": {
+          "version": "3.16.1",
+          "from": "validator@~3.16.0",
+          "resolved": "https://registry.npmjs.org/validator/-/validator-3.16.1.tgz"
+        }
+      }
     },
     "simple-migrate": {
       "version": "0.1.3",

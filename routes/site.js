@@ -54,11 +54,12 @@ app.route('/')
     }
     function resjson(pSite) {
       pSite.then(function (site) {
+        debug('site got: %j', site);
         if (!site) {
           res.json(null);
           res.statusCode = 404;
         } else {
-          res.json(site);
+          res.json(site.values);
         }
       })
       .fail(function (err) {

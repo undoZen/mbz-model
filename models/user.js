@@ -6,13 +6,22 @@ var qdb = require('../lib/db/qdb');
 var cache = require('../lib/cache');
 var crypt = require('../lib/crypt');
 
+var Sequelize = require('sequelize');
+var sequelize = require('../lib/db/sequelize');
+var User = exports = module.exports = sequelize.define('User', {
+  username: {type: Sequelize.STRING, allowNull: false, unique: true},
+  password: {type: Sequelize.STRING, allowNull: false},
+  salt: {type: Sequelize.STRING, allowNull: false},
+  email: {type: Sequelize.STRING, allowNull: false, unique: true, validate: {isEmail: true}}
+});
+
 exports.qAddUser = function (user) {
   var u = _.extend({}, user);
   u.password = crypt.ghash(u.password);
-  return Q(knex('user').insert(u))
-  //.then(knex('user').insert.bind(knex('user'), u))
-  .then(function (ids) {
-    return qGetUserById(ids[0]);
+  return Q(User.create(u))//, 'username password salt email'.split(' '))
+  .then(function (user) {
+    console.log(user.values)
+    return user.values;
   }, function (err) {
     var match = err.message.match(/^ER_DUP_ENTRY.*for key '([^']+)'/);
     if (match) throw new Error(match[1] + ' already exists');
@@ -41,17 +50,20 @@ exports.qAddUser = function (user) {
   */
 };
 
-var qGetUserByQueryObj = exports.qGetUserByQueryObj = function (queryObj) {
+exports.qGetUserByQueryObj = qGetUserByQueryObj;
+function qGetUserByQueryObj(queryObj) {
   var pNotFound = Q({id: -1});
-  return Q(knex('user').where(queryObj).select())
-  .then(function (results) {
-    return results.length ? results[0] : pNotFound;
+  return Q(User.find({where: queryObj}))
+  .then(function (result) {
+    return result ? result.values : pNotFound;
   })
+  /*
   return qdb.get('username2id:'+username.toLowerCase())
   .then(function (id) {
     if (!id) return pNotFound;
     return qGetUserById(id);
   });
+  */
 };
 
 function sumkey(queryObj) {

@@ -6,12 +6,14 @@ var qdb = require('../lib/db/qdb');
 var _ = require('lodash');
 var config = require('config');
 _.merge(config, require('../config/default.json'), require('../config/test.json')); //insure config not overwritten by local.json
+var sequelize = require('../lib/db/sequelize')
 
 describe('start', function () {
   before(function (done) {
     var _config = JSON.parse(JSON.stringify(config));
     console.error(_config);
     qdb.flushall()
+    .then(sequelize.sync.bind(sequelize, {force: true}))
     .then(function () {
       sm(
         _config.mysqlConnection,

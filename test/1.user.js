@@ -23,12 +23,22 @@ describe('user model', function () {
       .send(userObj)
       .expect(201, function (err, res) {
         assert.ok(!err);
+        console.log(res.body)
         assert.equal(res.body.id, 1);
         userObj.id = res.body.id;
         assert.equal(res.body.username, userObj.username);
         assert.equal(res.body.email, userObj.email);
         assert.notEqual(res.body.password, userObj.password);
-        done();
+        supertest(app)
+          .post('/user')
+          .type('json')
+          .send({
+            username: 'xingfuyangtou',
+            salt: '123',
+            password: '123123',
+            email: 'xingfuyangtou@gmail.com'
+          })
+          .end(done);
       });
   });
 
@@ -36,6 +46,7 @@ describe('user model', function () {
     supertest(app)
       .get('/user/1/salt')
       .expect(200, function (err, res) {
+        if (err) console.log(res.body);
         assert.ok(!err);
         assert.equal(userObj.salt, res.body.salt);
         done();

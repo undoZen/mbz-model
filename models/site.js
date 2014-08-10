@@ -7,6 +7,18 @@ var ldb = require('../lib/db/ldb');
 var crypt = require('../lib/crypt');
 var debug = require('debug')('mm:model:site');
 
+var Sequelize = require('sequelize');
+var sequelize = require('../lib/db/sequelize');
+var User = require('./user');
+var Site = exports = module.exports = sequelize.define('Site', {
+  name: {type: Sequelize.STRING, allowNull: false, unique: true},
+  domain: {type: Sequelize.STRING, allowNull: false},
+  ownerId: {type: Sequelize.INTEGER, allowNull: false, references: User, referenceKey: 'id'}
+});
+//User.hasMany(Site);
+//Site.belongsTo(User, {as: 'owner', allowNull: false});
+var CName = require('./cname');
+
 function mapJsonParse(s) {
   return JSON.parse(s);
 }
@@ -31,26 +43,23 @@ exports.qAddSite = function (site) {
     delete c.customDomain;
   }
   debug('add site: %j', c)
-  return Q(knex('site').insert(c))
-  .then(function (ids) {
-    return ids[0];
+  return Q(Site.create(c))
+  .then(function (site) {
+    return site.values;
   })
-  .then(function (id) {
-    if (!customDomain) return id;
-    return Q(knex('cname').insert({
+  .then(function (site) {
+    if (!customDomain) return site;
+    return Q(CName.create({
       domain: customDomain,
-      siteId: id
+      siteId: site.id
     }))
-    .then(fixedReturn(id));
+    .then(fixedReturn(site));
   })
-  .then(function (id) {
-    return qSiteById(id);
-  })
+  /* 當時用 redis 實現時候的代碼
   var domains = c.customDomain ? [c.domain, c.customDomain] : [c.domain];
   var dprops = domains.map(function (d) {
     return 'domain2id:' + d;
   });
-  /* 當時用 redis 實現時候的代碼
   return qdb.mget(dprops)
   .then(function (idsByDomain) {
     for (var i in idsByDomain) {
@@ -77,7 +86,7 @@ exports.qSiteById = qSiteById;
 function qSiteById(pId) {
   return Q(pId)
   .then(function (siteId) {
-    return Q(knex('site').where({id: siteId}).select()).get(0);
+    return Q(Site.find(siteId));
   })
 }
 
@@ -87,13 +96,13 @@ function qSiteByDomain(pDomain) {
   .then(function (domain) {
     debug('domain: %s', domain)
     if (domain.match(/\.mian\.bz$/i)) {
-      return Q(knex('site').where({domain: domain}).limit(1).select()).get(0);
+      return Q(Site.find({where: {domain: domain}}))
     } else {
-      return Q(knex('cname').where({domain: domain}).limit(1).select()).get(0)
+      return Q(CName.find({where: {domain: domain}}))
       .then(function (cname) {
         debug('cname: %j', cname)
         if (!cname) return null;
-        return Q(knex('site').where({id: cname.siteId}).limit(1).select()).get(0);
+        return Q(Site.find(cname.siteId));
       })
     }
     //return qdb.get(fPrependString('domain2id:')(domain));
@@ -112,14 +121,12 @@ function qSitesByIds (pIds) {
 exports.qSitesByUserId = function (pId) {
   return Q(pId)
   .then(function (id) {
-    return Q(knex('site').where({ownerId: id}).select());
+    return Q(Site.findAll({where: {ownerId: id}}));
     return qdb.smembers('user:'+id+':sites')
   })
   //.then(qSitesByIds)
 };
 
 exports.qAllSites = function () {
-  return Q(knex('site').select());
-  return qdb.smembers('global:sites')
-  .then(qSitesByIds)
+  return Q(Site.findAll());
 };

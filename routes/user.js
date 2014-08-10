@@ -29,7 +29,7 @@ app.route('/')
 app.route('/:id')
   .get(
     function (req, res, next) {
-      res.json(userModel.qGetUserById(req.params.id));
+      res.json(userModel.qGetUserById(parseInt(req.params.id, 10)));
     },
     function (err, req, res, next) {
       res.json({error_message: err.message});

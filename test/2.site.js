@@ -97,13 +97,17 @@ describe('site model: ', function () {
     supertest(app)
     .get('/site?domain=www.qznature.com')
     .expect(200, function (err, res) {
+      if (err) console.log(err);
       assert(!err);
       var site1 = res.body;
+      console.log(site1);
       supertest(app)
       .get('/site?domain=qznature.mian.bz')
       .expect(200, function (err, res) {
+        if (err) console.log(err);
         assert(!err);
         var site2 = res.body;
+        console.log(site2);
         assert.equal(site1.id, site2.id);
         assert.equal(site1.ownerId, 2);
         done();
@@ -133,6 +137,7 @@ describe('site model: ', function () {
       if (err) { console.error(err.stack); console.error(res.text) };
       assert(!err);
       var site1 = res.body;
+      console.log(site1);
       supertest(app)
       .get('/site?domain=qznature.mian.bz')
       .expect(200, function (err, res) {
