@@ -8,9 +8,7 @@ var debug = require('log4js-or-debug')('mm:model:doc');
 var _ = require('lodash');
 
 var knex = require('../lib/db/knex');
-var qdb = require('../lib/db/qdb');
 var siteModel = require('./site');
-var cache = require('../lib/cache');
 
 var env = process.env.NODE_ENV || 'development';
 
@@ -126,10 +124,6 @@ exports.qSaveDoc = function(doc) {
           debug('linksFrom: %j', linksFrom);
           var ids = linksFrom.map(sumkey).concat(cacheKey);
           debug('cacheKeys: %j', ids);
-          return qdb.del(ids);
-        })
-        .then(function (deletedCache) {
-          debug('deletedCache: %s', deletedCache);
           debug('oldDoc save to doch: %j', oldDoc);
           Q(knex('doch').insert(oldDoc))
           .fail(function (err) {
@@ -159,11 +153,7 @@ exports.qSaveDoc = function(doc) {
           if (doc.published) {
             return qGetOneDoc({docId: doc.docId})
           } else {
-            return qdb.del(sumkey(doc))
-            .then(function (deletedCache) {
-              debug('deletedCache: %s', deletedCache);
-              return qGetOneDocH({docId: doc.docId});
-            })
+            return qGetOneDocH({docId: doc.docId});
           }
         })
       }
@@ -202,13 +192,6 @@ var decDocLinks = function (qDoc) {
     })
   })
 }
-function sumkey(doc) {
-    debug('sumkey doc: %j', doc);
-    var result = 'cache:doc:' + doc.siteId + ':' + doc.docId + ':' + (doc.published ? 'p' : 'd');
-    debug('sumkey result: %s', result);
-    return result;
-}
-decDocLinks = cache(decDocLinks, sumkey, '');
 
 exports.qGetOneDoc = qGetOneDoc;
 function qGetOneDoc(where) {

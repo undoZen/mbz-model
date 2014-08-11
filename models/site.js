@@ -2,8 +2,6 @@ var Q = require('q');
 var _ = require('lodash');
 
 var knex = require('../lib/db/knex');
-var qdb = require('../lib/db/qdb');
-var ldb = require('../lib/db/ldb');
 var crypt = require('../lib/crypt');
 var debug = require('debug')('mm:model:site');
 
