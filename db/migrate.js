@@ -9,5 +9,5 @@ sm(
       console.error(err.stack);
       process.exit(1);
     }
-    console.log('migrated files:', filse);
+    console.log('migrated files:', files);
   });
