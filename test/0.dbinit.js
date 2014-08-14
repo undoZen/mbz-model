@@ -8,10 +8,8 @@ _.merge(config, require('../config/default.json'), require('../config/test.json'
 
 describe('start', function () {
   before(function (done) {
-    var _config = JSON.parse(JSON.stringify(config));
-    console.error(_config);
     sm(
-      _config.mysqlConnection,
+      config.mysqlConnection,
       __dirname + '/../db/migration',
       new Date(0),
       done

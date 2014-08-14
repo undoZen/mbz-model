@@ -14,7 +14,7 @@ app.route('/')
     bodyParser.urlencoded({extended: true}),
     function (req, res, next) {
       res.statusCode = 201;
-      var user = _.pick(req.body, 'username salt password email'.split(' '));
+      var user = _.pick(req.body, 'username nickname salt password email'.split(' '));
       res.json(userModel.qAddUser(user));
     })
   .get(
